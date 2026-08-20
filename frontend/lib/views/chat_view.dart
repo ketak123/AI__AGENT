@@ -13,12 +13,14 @@ class ChatView extends StatefulWidget {
   final ApiService apiService;
   final Company? selectedCompany;
   final VoidCallback? onRefreshCompanies;
+  final VoidCallback? onOpenSettings;
 
   const ChatView({
     super.key,
     required this.apiService,
     this.selectedCompany,
     this.onRefreshCompanies,
+    this.onOpenSettings,
   });
 
   @override
@@ -368,10 +370,10 @@ class _ChatViewState extends State<ChatView> {
           Expanded(
             child: Column(
               children: [
-                // Top Ribbon with Agent Selector, AI Keys & Gemini-style Company Slider Toggle
+                // Sleek Minimal Top Header
                 Container(
-                  height: 52,
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+                  height: 48,
+                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
                   decoration: BoxDecoration(
                     color: const Color(0xFF0F172A),
                     border: Border(
@@ -380,42 +382,99 @@ class _ChatViewState extends State<ChatView> {
                   ),
                   child: Row(
                     children: [
-                      Expanded(
-                        child: ListView(
-                          scrollDirection: Axis.horizontal,
-                          children: AppConstants.agentRoles.map((role) {
-                            final isSelected = role['id'] == _selectedAgent;
-                            final color = role['color'] as Color;
-                            return Padding(
-                              padding: const EdgeInsets.only(right: 8),
-                              child: ChoiceChip(
-                                avatar: Icon(
-                                  role['icon'] as IconData,
-                                  size: 16,
-                                  color: isSelected ? Colors.white : color,
-                                ),
-                                label: Text(
-                                  role['name'] as String,
-                                  style: GoogleFonts.inter(
-                                    fontSize: 12,
-                                    fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
-                                    color: isSelected ? Colors.white : const Color(0xFF94A3B8),
+                      // Gemini-style Agent Role Dropdown Selector
+                      PopupMenuButton<String>(
+                        tooltip: 'Select Active AI Agent',
+                        offset: const Offset(0, 42),
+                        color: const Color(0xFF0F172A),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          side: const BorderSide(color: Color(0xFF1E293B)),
+                        ),
+                        onSelected: (agentId) {
+                          setState(() => _selectedAgent = agentId);
+                        },
+                        itemBuilder: (context) {
+                          return AppConstants.agentRoles.map((role) {
+                            final roleId = role['id'] as String;
+                            final roleColor = role['color'] as Color;
+                            final isCur = roleId == _selectedAgent;
+                            return PopupMenuItem<String>(
+                              value: roleId,
+                              child: Row(
+                                children: [
+                                  Container(
+                                    padding: const EdgeInsets.all(6),
+                                    decoration: BoxDecoration(
+                                      color: roleColor.withValues(alpha: 0.18),
+                                      borderRadius: BorderRadius.circular(6),
+                                    ),
+                                    child: Icon(role['icon'] as IconData, size: 15, color: roleColor),
                                   ),
-                                ),
-                                selected: isSelected,
-                                selectedColor: color.withValues(alpha: 0.8),
-                                backgroundColor: const Color(0xFF1E293B).withValues(alpha: 0.5),
-                                onSelected: (val) {
-                                  if (val) {
-                                    setState(() => _selectedAgent = role['id'] as String);
-                                  }
-                                },
+                                  const SizedBox(width: 10),
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        Text(
+                                          role['name'] as String,
+                                          style: GoogleFonts.inter(
+                                            fontSize: 12.5,
+                                            fontWeight: isCur ? FontWeight.bold : FontWeight.w500,
+                                            color: isCur ? Colors.white : const Color(0xFFCBD5E1),
+                                          ),
+                                        ),
+                                        Text(
+                                          role['description'] as String,
+                                          style: GoogleFonts.inter(fontSize: 10, color: const Color(0xFF64748B)),
+                                          maxLines: 1,
+                                          overflow: TextOverflow.ellipsis,
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                  if (isCur)
+                                    const Icon(Icons.check_rounded, size: 16, color: Color(0xFF34D399)),
+                                ],
                               ),
                             );
-                          }).toList(),
+                          }).toList();
+                        },
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                          decoration: BoxDecoration(
+                            color: (currentAgentMeta['color'] as Color).withValues(alpha: 0.14),
+                            borderRadius: BorderRadius.circular(8),
+                            border: Border.all(
+                              color: (currentAgentMeta['color'] as Color).withValues(alpha: 0.35),
+                            ),
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(
+                                currentAgentMeta['icon'] as IconData,
+                                size: 15,
+                                color: currentAgentMeta['color'] as Color,
+                              ),
+                              const SizedBox(width: 8),
+                              Text(
+                                currentAgentMeta['name'] as String,
+                                style: GoogleFonts.inter(
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w600,
+                                  color: Colors.white,
+                                ),
+                              ),
+                              const SizedBox(width: 4),
+                              const Icon(Icons.keyboard_arrow_down_rounded, size: 16, color: Color(0xFF94A3B8)),
+                            ],
+                          ),
                         ),
                       ),
-                      const SizedBox(width: 8),
+
+                      const Spacer(),
 
                       // Gemini-style Company Data Slider Toggle Pill
                       InkWell(
@@ -430,7 +489,7 @@ class _ChatViewState extends State<ChatView> {
                         borderRadius: BorderRadius.circular(8),
                         child: AnimatedContainer(
                           duration: const Duration(milliseconds: 200),
-                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
                           decoration: BoxDecoration(
                             color: _isCompanySliderOpen
                                 ? const Color(0xFF6366F1).withValues(alpha: 0.25)
@@ -445,12 +504,12 @@ class _ChatViewState extends State<ChatView> {
                             children: [
                               Icon(
                                 _isCompanySliderOpen ? Icons.view_sidebar_rounded : Icons.view_sidebar_outlined,
-                                size: 15,
+                                size: 14,
                                 color: _isCompanySliderOpen ? const Color(0xFF818CF8) : const Color(0xFF94A3B8),
                               ),
                               const SizedBox(width: 6),
                               Text(
-                                _isCompanySliderOpen ? 'Company Slider: ON' : 'Company Data Slider',
+                                _isCompanySliderOpen ? 'Company Context: ON' : 'Company Context',
                                 style: GoogleFonts.inter(
                                   fontSize: 11.5,
                                   fontWeight: FontWeight.w600,
@@ -464,86 +523,37 @@ class _ChatViewState extends State<ChatView> {
 
                       const SizedBox(width: 8),
 
-                      // AI Brain Keys Button
-                      InkWell(
-                        onTap: _showAIBrainSettingsDialog,
-                        borderRadius: BorderRadius.circular(8),
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                          decoration: BoxDecoration(
-                            color: _isLiveAI ? const Color(0xFF10B981).withValues(alpha: 0.15) : const Color(0xFF6366F1).withValues(alpha: 0.15),
-                            borderRadius: BorderRadius.circular(8),
-                            border: Border.all(
-                              color: _isLiveAI ? const Color(0xFF10B981).withValues(alpha: 0.4) : const Color(0xFF6366F1).withValues(alpha: 0.4),
-                            ),
-                          ),
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Icon(
-                                _isLiveAI ? Icons.auto_awesome_rounded : Icons.psychology_outlined,
-                                size: 14,
-                                color: _isLiveAI ? const Color(0xFF34D399) : const Color(0xFFA5B4FC),
-                              ),
-                              const SizedBox(width: 6),
-                              Text(
-                                _isLiveAI ? 'Live Gemini AI' : 'AI Keys',
-                                style: GoogleFonts.inter(
-                                  fontSize: 11.5,
-                                  fontWeight: FontWeight.bold,
-                                  color: _isLiveAI ? const Color(0xFF34D399) : const Color(0xFFA5B4FC),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
+                      // Settings & AI Brain Console Button
+                      IconButton(
+                        icon: const Icon(Icons.settings_outlined, size: 18, color: Color(0xFF94A3B8)),
+                        tooltip: 'Settings & AI Keys',
+                        padding: EdgeInsets.zero,
+                        constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
+                        onPressed: () {
+                          if (widget.onOpenSettings != null) {
+                            widget.onOpenSettings!();
+                          } else {
+                            _showAIBrainSettingsDialog();
+                          }
+                        },
                       ),
                     ],
                   ),
                 ),
 
-                // Quick Action Feature Chips
-                Container(
-                  height: 48,
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFF0B0F19),
-                    border: Border(
-                      bottom: BorderSide(color: Colors.white.withValues(alpha: 0.04)),
-                    ),
-                  ),
-                  child: ListView(
-                    scrollDirection: Axis.horizontal,
-                    children: _quickActions.map((action) {
-                      return Padding(
-                        padding: const EdgeInsets.only(right: 8),
-                        child: ActionChip(
-                          label: Text(
-                            action['label']!,
-                            style: GoogleFonts.inter(
-                              fontSize: 12,
-                              color: const Color(0xFFE2E8F0),
-                              fontWeight: FontWeight.w500,
-                            ),
-                          ),
-                          backgroundColor: const Color(0xFF1E1B4B).withValues(alpha: 0.5),
-                          side: BorderSide(color: const Color(0xFF6366F1).withValues(alpha: 0.3)),
-                          onPressed: () => _sendMessage(action['prompt']!, action['agent']),
-                        ),
-                      );
-                    }).toList(),
-                  ),
-                ),
-
-                // Chat Messages List
+                // Chat Messages & Gemini-style Empty State
                 Expanded(
                   child: ListView.builder(
                     controller: _scrollController,
                     padding: const EdgeInsets.all(16),
-                    itemCount: _messages.length,
+                    itemCount: _messages.length + (_messages.length <= 1 ? 1 : 0),
                     itemBuilder: (context, index) {
-                      final msg = _messages[index];
-                      return _buildMessageBubble(msg);
+                      if (index < _messages.length) {
+                        final msg = _messages[index];
+                        return _buildMessageBubble(msg);
+                      }
+                      // Show Gemini Suggested Prompts Grid on fresh chat
+                      return _buildSuggestedPromptsGrid();
                     },
                   ),
                 ),
@@ -674,6 +684,106 @@ class _ChatViewState extends State<ChatView> {
             curve: Curves.easeInOutCubic,
             width: _isCompanySliderOpen ? 360 : 0,
             child: _isCompanySliderOpen ? _buildCompanyIntelligenceSlider() : const SizedBox.shrink(),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSuggestedPromptsGrid() {
+    return Container(
+      margin: const EdgeInsets.only(top: 24, bottom: 16),
+      padding: const EdgeInsets.symmetric(horizontal: 8),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              const Icon(Icons.auto_awesome, size: 16, color: Color(0xFF818CF8)),
+              const SizedBox(width: 8),
+              Text(
+                'Suggested AI Business Prompts',
+                style: GoogleFonts.outfit(
+                  fontSize: 13,
+                  fontWeight: FontWeight.bold,
+                  color: const Color(0xFFCBD5E1),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          LayoutBuilder(
+            builder: (context, constraints) {
+              final crossAxisCount = constraints.maxWidth > 580 ? 2 : 1;
+              return GridView.builder(
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: crossAxisCount,
+                  crossAxisSpacing: 10,
+                  mainAxisSpacing: 10,
+                  mainAxisExtent: 80,
+                ),
+                itemCount: _quickActions.length,
+                itemBuilder: (context, idx) {
+                  final action = _quickActions[idx];
+                  return InkWell(
+                    onTap: () => _sendMessage(action['prompt']!, action['agent']),
+                    borderRadius: BorderRadius.circular(12),
+                    child: Container(
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF131B2E),
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(color: const Color(0xFF1E293B)),
+                      ),
+                      child: Row(
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.all(8),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFF6366F1).withValues(alpha: 0.15),
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            child: const Icon(Icons.bolt_rounded, size: 16, color: Color(0xFF818CF8)),
+                          ),
+                          const SizedBox(width: 10),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Text(
+                                  action['label']!,
+                                  style: GoogleFonts.inter(
+                                    fontSize: 12.5,
+                                    fontWeight: FontWeight.w600,
+                                    color: Colors.white,
+                                  ),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                                const SizedBox(height: 2),
+                                Text(
+                                  action['prompt']!,
+                                  style: GoogleFonts.inter(
+                                    fontSize: 11,
+                                    color: const Color(0xFF94A3B8),
+                                  ),
+                                  maxLines: 2,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ],
+                            ),
+                          ),
+                          const Icon(Icons.arrow_forward_ios_rounded, size: 12, color: Color(0xFF64748B)),
+                        ],
+                      ),
+                    ),
+                  );
+                },
+              );
+            },
           ),
         ],
       ),
