@@ -818,45 +818,54 @@ class _HomeShellState extends State<HomeShell> {
         children: [
           // Sidebar Brand Header
           Padding(
-            padding: const EdgeInsets.fromLTRB(14, 16, 14, 12),
-            child: Row(
-              children: [
-                Container(
-                  padding: const EdgeInsets.all(7),
-                  decoration: BoxDecoration(
-                    gradient: const LinearGradient(colors: [Color(0xFF6366F1), Color(0xFF06B6D4)]),
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  child: const Icon(Icons.auto_awesome, color: Colors.white, size: 18),
-                ),
-                if (_isSidebarExpanded) ...[
-                  const SizedBox(width: 10),
-                  Expanded(
-                    child: Text(
-                      AppConstants.appName,
-                      style: GoogleFonts.outfit(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.white,
+            padding: const EdgeInsets.fromLTRB(12, 16, 12, 12),
+            child: _isSidebarExpanded
+                ? Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(7),
+                        decoration: BoxDecoration(
+                          gradient: const LinearGradient(colors: [Color(0xFF6366F1), Color(0xFF06B6D4)]),
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        child: const Icon(Icons.auto_awesome, color: Colors.white, size: 18),
                       ),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: Text(
+                          AppConstants.appName,
+                          style: GoogleFonts.outfit(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white,
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                      IconButton(
+                        icon: const Icon(Icons.menu_open_rounded, color: Color(0xFF94A3B8), size: 18),
+                        padding: EdgeInsets.zero,
+                        constraints: const BoxConstraints(minWidth: 26, minHeight: 26),
+                        tooltip: 'Collapse Navigation',
+                        onPressed: () => setState(() => _isSidebarExpanded = false),
+                      ),
+                    ],
+                  )
+                : Center(
+                    child: InkWell(
+                      onTap: () => setState(() => _isSidebarExpanded = true),
+                      borderRadius: BorderRadius.circular(10),
+                      child: Container(
+                        padding: const EdgeInsets.all(8),
+                        decoration: BoxDecoration(
+                          gradient: const LinearGradient(colors: [Color(0xFF6366F1), Color(0xFF06B6D4)]),
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        child: const Icon(Icons.menu_rounded, color: Colors.white, size: 18),
+                      ),
                     ),
                   ),
-                ],
-                IconButton(
-                  icon: Icon(
-                    _isSidebarExpanded ? Icons.menu_open_rounded : Icons.menu_rounded,
-                    color: const Color(0xFF94A3B8),
-                    size: 18,
-                  ),
-                  padding: EdgeInsets.zero,
-                  constraints: const BoxConstraints(minWidth: 26, minHeight: 26),
-                  tooltip: _isSidebarExpanded ? 'Collapse Navigation' : 'Expand Navigation',
-                  onPressed: () => setState(() => _isSidebarExpanded = !_isSidebarExpanded),
-                ),
-              ],
-            ),
           ),
 
           // Workspace / Company Switcher Button in Sidebar

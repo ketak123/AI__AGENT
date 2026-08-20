@@ -362,367 +362,429 @@ class _ChatViewState extends State<ChatView> {
       orElse: () => AppConstants.agentRoles.first,
     );
 
-    return Scaffold(
-      backgroundColor: Colors.transparent,
-      body: Row(
-        children: [
-          // Main Chat Area (Full width when slider is closed, balanced when slider is open)
-          Expanded(
-            child: Column(
-              children: [
-                // Sleek Minimal Top Header
-                Container(
-                  height: 48,
-                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFF0F172A),
-                    border: Border(
-                      bottom: BorderSide(color: Colors.white.withValues(alpha: 0.06)),
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final availableWidth = constraints.maxWidth;
+        // On wide desktop screens (>= 960px), side-by-side mode.
+        // On mobile / compact windows (< 960px), overlay drawer with backdrop.
+        final isSideBySide = availableWidth >= 960;
+        final sliderWidth = isSideBySide
+            ? (availableWidth * 0.34).clamp(280.0, 360.0)
+            : (availableWidth * 0.88).clamp(260.0, 380.0);
+
+        return Scaffold(
+          backgroundColor: Colors.transparent,
+          body: Stack(
+            children: [
+              // 1. Main Chat Area
+              Positioned(
+                left: 0,
+                top: 0,
+                bottom: 0,
+                right: (isSideBySide && _isCompanySliderOpen) ? sliderWidth : 0,
+                child: _buildChatBody(currentAgentMeta, availableWidth),
+              ),
+
+              // 2. Backdrop Overlay on mobile/compact when drawer is open
+              if (!isSideBySide && _isCompanySliderOpen)
+                Positioned.fill(
+                  child: GestureDetector(
+                    onTap: () => setState(() => _isCompanySliderOpen = false),
+                    child: Container(
+                      color: Colors.black.withValues(alpha: 0.55),
                     ),
                   ),
-                  child: Row(
-                    children: [
-                      // Gemini-style Agent Role Dropdown Selector
-                      PopupMenuButton<String>(
-                        tooltip: 'Select Active AI Agent',
-                        offset: const Offset(0, 42),
-                        color: const Color(0xFF0F172A),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                          side: const BorderSide(color: Color(0xFF1E293B)),
-                        ),
-                        onSelected: (agentId) {
-                          setState(() => _selectedAgent = agentId);
-                        },
-                        itemBuilder: (context) {
-                          return AppConstants.agentRoles.map((role) {
-                            final roleId = role['id'] as String;
-                            final roleColor = role['color'] as Color;
-                            final isCur = roleId == _selectedAgent;
-                            return PopupMenuItem<String>(
-                              value: roleId,
-                              child: Row(
+                ),
+
+              // 3. Sliding Company Intelligence Drawer
+              if (_isCompanySliderOpen)
+                Positioned(
+                  top: 0,
+                  bottom: 0,
+                  right: 0,
+                  width: sliderWidth,
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF0F172A),
+                      boxShadow: [
+                        if (!isSideBySide)
+                          BoxShadow(
+                            color: Colors.black.withValues(alpha: 0.4),
+                            blurRadius: 20,
+                            offset: const Offset(-4, 0),
+                          ),
+                      ],
+                    ),
+                    child: _buildCompanyIntelligenceSlider(),
+                  ),
+                ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildChatBody(Map<String, dynamic> currentAgentMeta, double availableWidth) {
+    return Column(
+      children: [
+        // Sleek Minimal Top Header
+        Container(
+          height: 48,
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+          decoration: BoxDecoration(
+            color: const Color(0xFF0F172A),
+            border: Border(
+              bottom: BorderSide(color: Colors.white.withValues(alpha: 0.06)),
+            ),
+          ),
+          child: Row(
+            children: [
+              // Gemini-style Agent Role Dropdown Selector
+              Flexible(
+                child: PopupMenuButton<String>(
+                  tooltip: 'Select Active AI Agent',
+                  offset: const Offset(0, 42),
+                  color: const Color(0xFF0F172A),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    side: const BorderSide(color: Color(0xFF1E293B)),
+                  ),
+                  onSelected: (agentId) {
+                    setState(() => _selectedAgent = agentId);
+                  },
+                  itemBuilder: (context) {
+                    return AppConstants.agentRoles.map((role) {
+                      final roleId = role['id'] as String;
+                      final roleColor = role['color'] as Color;
+                      final isCur = roleId == _selectedAgent;
+                      return PopupMenuItem<String>(
+                        value: roleId,
+                        child: Row(
+                          children: [
+                            Container(
+                              padding: const EdgeInsets.all(6),
+                              decoration: BoxDecoration(
+                                color: roleColor.withValues(alpha: 0.18),
+                                borderRadius: BorderRadius.circular(6),
+                              ),
+                              child: Icon(role['icon'] as IconData, size: 15, color: roleColor),
+                            ),
+                            const SizedBox(width: 10),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                mainAxisSize: MainAxisSize.min,
                                 children: [
-                                  Container(
-                                    padding: const EdgeInsets.all(6),
-                                    decoration: BoxDecoration(
-                                      color: roleColor.withValues(alpha: 0.18),
-                                      borderRadius: BorderRadius.circular(6),
-                                    ),
-                                    child: Icon(role['icon'] as IconData, size: 15, color: roleColor),
-                                  ),
-                                  const SizedBox(width: 10),
-                                  Expanded(
-                                    child: Column(
-                                      crossAxisAlignment: CrossAxisAlignment.start,
-                                      mainAxisSize: MainAxisSize.min,
-                                      children: [
-                                        Text(
-                                          role['name'] as String,
-                                          style: GoogleFonts.inter(
-                                            fontSize: 12.5,
-                                            fontWeight: isCur ? FontWeight.bold : FontWeight.w500,
-                                            color: isCur ? Colors.white : const Color(0xFFCBD5E1),
-                                          ),
-                                        ),
-                                        Text(
-                                          role['description'] as String,
-                                          style: GoogleFonts.inter(fontSize: 10, color: const Color(0xFF64748B)),
-                                          maxLines: 1,
-                                          overflow: TextOverflow.ellipsis,
-                                        ),
-                                      ],
+                                  Text(
+                                    role['name'] as String,
+                                    style: GoogleFonts.inter(
+                                      fontSize: 12.5,
+                                      fontWeight: isCur ? FontWeight.bold : FontWeight.w500,
+                                      color: isCur ? Colors.white : const Color(0xFFCBD5E1),
                                     ),
                                   ),
-                                  if (isCur)
-                                    const Icon(Icons.check_rounded, size: 16, color: Color(0xFF34D399)),
+                                  Text(
+                                    role['description'] as String,
+                                    style: GoogleFonts.inter(fontSize: 10, color: const Color(0xFF64748B)),
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
                                 ],
                               ),
-                            );
-                          }).toList();
-                        },
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-                          decoration: BoxDecoration(
-                            color: (currentAgentMeta['color'] as Color).withValues(alpha: 0.14),
-                            borderRadius: BorderRadius.circular(8),
-                            border: Border.all(
-                              color: (currentAgentMeta['color'] as Color).withValues(alpha: 0.35),
                             ),
-                          ),
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Icon(
-                                currentAgentMeta['icon'] as IconData,
-                                size: 15,
-                                color: currentAgentMeta['color'] as Color,
-                              ),
-                              const SizedBox(width: 8),
-                              Text(
-                                currentAgentMeta['name'] as String,
-                                style: GoogleFonts.inter(
-                                  fontSize: 12,
-                                  fontWeight: FontWeight.w600,
-                                  color: Colors.white,
-                                ),
-                              ),
-                              const SizedBox(width: 4),
-                              const Icon(Icons.keyboard_arrow_down_rounded, size: 16, color: Color(0xFF94A3B8)),
-                            ],
-                          ),
+                            if (isCur)
+                              const Icon(Icons.check_rounded, size: 16, color: Color(0xFF34D399)),
+                          ],
                         ),
+                      );
+                    }).toList();
+                  },
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
+                    decoration: BoxDecoration(
+                      color: (currentAgentMeta['color'] as Color).withValues(alpha: 0.14),
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(
+                        color: (currentAgentMeta['color'] as Color).withValues(alpha: 0.35),
                       ),
-
-                      const Spacer(),
-
-                      // Gemini-style Company Data Slider Toggle Pill
-                      InkWell(
-                        onTap: () {
-                          setState(() {
-                            _isCompanySliderOpen = !_isCompanySliderOpen;
-                            if (_isCompanySliderOpen && widget.selectedCompany != null) {
-                              _loadCompanyKnowledge();
-                            }
-                          });
-                        },
-                        borderRadius: BorderRadius.circular(8),
-                        child: AnimatedContainer(
-                          duration: const Duration(milliseconds: 200),
-                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-                          decoration: BoxDecoration(
-                            color: _isCompanySliderOpen
-                                ? const Color(0xFF6366F1).withValues(alpha: 0.25)
-                                : const Color(0xFF1E293B).withValues(alpha: 0.6),
-                            borderRadius: BorderRadius.circular(8),
-                            border: Border.all(
-                              color: _isCompanySliderOpen ? const Color(0xFF818CF8) : const Color(0xFF334155),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(
+                          currentAgentMeta['icon'] as IconData,
+                          size: 15,
+                          color: currentAgentMeta['color'] as Color,
+                        ),
+                        const SizedBox(width: 6),
+                        Flexible(
+                          child: Text(
+                            currentAgentMeta['name'] as String,
+                            style: GoogleFonts.inter(
+                              fontSize: 12,
+                              fontWeight: FontWeight.w600,
+                              color: Colors.white,
                             ),
-                          ),
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Icon(
-                                _isCompanySliderOpen ? Icons.view_sidebar_rounded : Icons.view_sidebar_outlined,
-                                size: 14,
-                                color: _isCompanySliderOpen ? const Color(0xFF818CF8) : const Color(0xFF94A3B8),
-                              ),
-                              const SizedBox(width: 6),
-                              Text(
-                                _isCompanySliderOpen ? 'Company Context: ON' : 'Company Context',
-                                style: GoogleFonts.inter(
-                                  fontSize: 11.5,
-                                  fontWeight: FontWeight.w600,
-                                  color: _isCompanySliderOpen ? Colors.white : const Color(0xFF94A3B8),
-                                ),
-                              ),
-                            ],
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
                           ),
                         ),
-                      ),
-
-                      const SizedBox(width: 8),
-
-                      // Settings & AI Brain Console Button
-                      IconButton(
-                        icon: const Icon(Icons.settings_outlined, size: 18, color: Color(0xFF94A3B8)),
-                        tooltip: 'Settings & AI Keys',
-                        padding: EdgeInsets.zero,
-                        constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
-                        onPressed: () {
-                          if (widget.onOpenSettings != null) {
-                            widget.onOpenSettings!();
-                          } else {
-                            _showAIBrainSettingsDialog();
-                          }
-                        },
-                      ),
-                    ],
-                  ),
-                ),
-
-                // Chat Messages & Gemini-style Empty State
-                Expanded(
-                  child: ListView.builder(
-                    controller: _scrollController,
-                    padding: const EdgeInsets.all(16),
-                    itemCount: _messages.length + (_messages.length <= 1 ? 1 : 0),
-                    itemBuilder: (context, index) {
-                      if (index < _messages.length) {
-                        final msg = _messages[index];
-                        return _buildMessageBubble(msg);
-                      }
-                      // Show Gemini Suggested Prompts Grid on fresh chat
-                      return _buildSuggestedPromptsGrid();
-                    },
-                  ),
-                ),
-
-                // Status bar
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 6),
-                  color: const Color(0xFF0F172A),
-                  child: Row(
-                    children: [
-                      if (_isLoading) ...[
-                        const SizedBox(
-                          width: 14,
-                          height: 14,
-                          child: CircularProgressIndicator(strokeWidth: 2, color: Color(0xFF6366F1)),
-                        ),
-                        const SizedBox(width: 8),
-                      ] else ...[
-                        const Icon(Icons.circle, size: 10, color: Color(0xFF10B981)),
-                        const SizedBox(width: 8),
+                        const SizedBox(width: 4),
+                        const Icon(Icons.keyboard_arrow_down_rounded, size: 16, color: Color(0xFF94A3B8)),
                       ],
-                      Text(
-                        'Active Agent: ${currentAgentMeta['name']} • $_statusText',
-                        style: GoogleFonts.inter(
-                          fontSize: 11.5,
-                          color: const Color(0xFF94A3B8),
-                          fontWeight: FontWeight.w500,
-                        ),
-                      ),
-                      const Spacer(),
-                      if (widget.selectedCompany != null) ...[
-                        InkWell(
-                          onTap: () {
-                            setState(() {
-                              _isCompanySliderOpen = !_isCompanySliderOpen;
-                              if (_isCompanySliderOpen) _loadCompanyKnowledge();
-                            });
-                          },
-                          borderRadius: BorderRadius.circular(6),
-                          child: Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                            child: Row(
-                              children: [
-                                Text(
-                                  '🏢 ${widget.selectedCompany!.name}',
-                                  style: GoogleFonts.inter(
-                                    fontSize: 11.5,
-                                    color: const Color(0xFFA5B4FC),
-                                    fontWeight: FontWeight.w600,
-                                  ),
-                                ),
-                                const SizedBox(width: 4),
-                                Icon(
-                                  _isCompanySliderOpen ? Icons.chevron_right_rounded : Icons.chevron_left_rounded,
-                                  size: 14,
-                                  color: const Color(0xFFA5B4FC),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
-                      ],
-                    ],
+                    ),
                   ),
                 ),
+              ),
 
-                // Input Bar
-                Container(
-                  padding: const EdgeInsets.all(12),
+              const SizedBox(width: 8),
+              const Spacer(),
+
+              // Gemini-style Company Data Slider Toggle Pill
+              InkWell(
+                onTap: () {
+                  setState(() {
+                    _isCompanySliderOpen = !_isCompanySliderOpen;
+                    if (_isCompanySliderOpen && widget.selectedCompany != null) {
+                      _loadCompanyKnowledge();
+                    }
+                  });
+                },
+                borderRadius: BorderRadius.circular(8),
+                child: AnimatedContainer(
+                  duration: const Duration(milliseconds: 200),
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
                   decoration: BoxDecoration(
-                    color: const Color(0xFF131B2E),
-                    border: Border(
-                      top: BorderSide(color: Colors.white.withValues(alpha: 0.08)),
+                    color: _isCompanySliderOpen
+                        ? const Color(0xFF6366F1).withValues(alpha: 0.25)
+                        : const Color(0xFF1E293B).withValues(alpha: 0.6),
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(
+                      color: _isCompanySliderOpen ? const Color(0xFF818CF8) : const Color(0xFF334155),
                     ),
                   ),
                   child: Row(
+                    mainAxisSize: MainAxisSize.min,
                     children: [
-                      Expanded(
-                        child: TextField(
-                          controller: _controller,
-                          textInputAction: TextInputAction.send,
-                          onSubmitted: (val) => _sendMessage(val),
-                          maxLines: null,
-                          style: GoogleFonts.inter(fontSize: 14, color: Colors.white),
-                          decoration: InputDecoration(
-                            hintText: 'Ask ${_selectedAgent.replaceAll('_', ' ')} or execute a business command...',
-                            hintStyle: GoogleFonts.inter(fontSize: 13.5, color: const Color(0xFF64748B)),
-                            fillColor: const Color(0xFF0B0F19),
-                            filled: true,
-                            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(12),
-                              borderSide: const BorderSide(color: Color(0xFF1E293B)),
-                            ),
-                            enabledBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(12),
-                              borderSide: const BorderSide(color: Color(0xFF1E293B)),
-                            ),
+                      Icon(
+                        _isCompanySliderOpen ? Icons.view_sidebar_rounded : Icons.view_sidebar_outlined,
+                        size: 14,
+                        color: _isCompanySliderOpen ? const Color(0xFF818CF8) : const Color(0xFF94A3B8),
+                      ),
+                      if (availableWidth > 460) ...[
+                        const SizedBox(width: 6),
+                        Text(
+                          _isCompanySliderOpen ? 'Company Context: ON' : 'Company Context',
+                          style: GoogleFonts.inter(
+                            fontSize: 11.5,
+                            fontWeight: FontWeight.w600,
+                            color: _isCompanySliderOpen ? Colors.white : const Color(0xFF94A3B8),
                           ),
                         ),
-                      ),
-                      const SizedBox(width: 8),
-                      IconButton.filled(
-                        style: IconButton.styleFrom(
-                          backgroundColor: const Color(0xFF6366F1),
-                          padding: const EdgeInsets.all(12),
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                        ),
-                        icon: _isLoading
-                            ? const SizedBox(
-                                width: 20,
-                                height: 20,
-                                child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
-                              )
-                            : const Icon(Icons.send_rounded, color: Colors.white, size: 20),
-                        onPressed: _isLoading ? null : () => _sendMessage(_controller.text),
-                      ),
+                      ],
                     ],
+                  ),
+                ),
+              ),
+
+              const SizedBox(width: 6),
+
+              // Settings & AI Brain Console Button
+              IconButton(
+                icon: const Icon(Icons.settings_outlined, size: 18, color: Color(0xFF94A3B8)),
+                tooltip: 'Settings & AI Keys',
+                padding: EdgeInsets.zero,
+                constraints: const BoxConstraints(minWidth: 30, minHeight: 30),
+                onPressed: () {
+                  if (widget.onOpenSettings != null) {
+                    widget.onOpenSettings!();
+                  } else {
+                    _showAIBrainSettingsDialog();
+                  }
+                },
+              ),
+            ],
+          ),
+        ),
+
+        // Chat Messages & Gemini-style Empty State
+        Expanded(
+          child: ListView.builder(
+            controller: _scrollController,
+            padding: const EdgeInsets.all(16),
+            itemCount: _messages.length + (_messages.length <= 1 ? 1 : 0),
+            itemBuilder: (context, index) {
+              if (index < _messages.length) {
+                final msg = _messages[index];
+                return _buildMessageBubble(msg);
+              }
+              // Show Gemini Suggested Prompts Grid on fresh chat
+              return _buildSuggestedPromptsGrid();
+            },
+          ),
+        ),
+
+        // Status bar
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+          color: const Color(0xFF0F172A),
+          child: Row(
+            children: [
+              if (_isLoading) ...[
+                const SizedBox(
+                  width: 14,
+                  height: 14,
+                  child: CircularProgressIndicator(strokeWidth: 2, color: Color(0xFF6366F1)),
+                ),
+                const SizedBox(width: 8),
+              ] else ...[
+                const Icon(Icons.circle, size: 9, color: Color(0xFF10B981)),
+                const SizedBox(width: 8),
+              ],
+              Expanded(
+                child: Text(
+                  'Active Agent: ${currentAgentMeta['name']} • $_statusText',
+                  style: GoogleFonts.inter(
+                    fontSize: 11.5,
+                    color: const Color(0xFF94A3B8),
+                    fontWeight: FontWeight.w500,
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+              if (widget.selectedCompany != null) ...[
+                const SizedBox(width: 8),
+                InkWell(
+                  onTap: () {
+                    setState(() {
+                      _isCompanySliderOpen = !_isCompanySliderOpen;
+                      if (_isCompanySliderOpen) _loadCompanyKnowledge();
+                    });
+                  },
+                  borderRadius: BorderRadius.circular(6),
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(
+                          '🏢 ${widget.selectedCompany!.name}',
+                          style: GoogleFonts.inter(
+                            fontSize: 11.5,
+                            color: const Color(0xFFA5B4FC),
+                            fontWeight: FontWeight.w600,
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                        const SizedBox(width: 4),
+                        Icon(
+                          _isCompanySliderOpen ? Icons.chevron_right_rounded : Icons.chevron_left_rounded,
+                          size: 14,
+                          color: const Color(0xFFA5B4FC),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
               ],
+            ],
+          ),
+        ),
+
+        // Input Bar
+        Container(
+          padding: const EdgeInsets.all(12),
+          decoration: BoxDecoration(
+            color: const Color(0xFF131B2E),
+            border: Border(
+              top: BorderSide(color: Colors.white.withValues(alpha: 0.08)),
             ),
           ),
-
-          // Gemini-Style Sliding Company Intelligence Drawer
-          AnimatedContainer(
-            duration: const Duration(milliseconds: 280),
-            curve: Curves.easeInOutCubic,
-            width: _isCompanySliderOpen ? 360 : 0,
-            child: _isCompanySliderOpen ? _buildCompanyIntelligenceSlider() : const SizedBox.shrink(),
+          child: Row(
+            children: [
+              Expanded(
+                child: TextField(
+                  controller: _controller,
+                  textInputAction: TextInputAction.send,
+                  onSubmitted: (val) => _sendMessage(val),
+                  maxLines: null,
+                  style: GoogleFonts.inter(fontSize: 14, color: Colors.white),
+                  decoration: InputDecoration(
+                    hintText: 'Ask ${_selectedAgent.replaceAll('_', ' ')} or execute a business command...',
+                    hintStyle: GoogleFonts.inter(fontSize: 13, color: const Color(0xFF64748B)),
+                    fillColor: const Color(0xFF0B0F19),
+                    filled: true,
+                    contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: const BorderSide(color: Color(0xFF1E293B)),
+                    ),
+                    enabledBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: const BorderSide(color: Color(0xFF1E293B)),
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(width: 8),
+              IconButton.filled(
+                style: IconButton.styleFrom(
+                  backgroundColor: const Color(0xFF6366F1),
+                  padding: const EdgeInsets.all(12),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                ),
+                icon: _isLoading
+                    ? const SizedBox(
+                        width: 20,
+                        height: 20,
+                        child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                      )
+                    : const Icon(Icons.send_rounded, color: Colors.white, size: 20),
+                onPressed: _isLoading ? null : () => _sendMessage(_controller.text),
+              ),
+            ],
           ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 
   Widget _buildSuggestedPromptsGrid() {
-    return Container(
-      margin: const EdgeInsets.only(top: 24, bottom: 16),
-      padding: const EdgeInsets.symmetric(horizontal: 8),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final crossAxisCount = constraints.maxWidth > 580 ? 2 : 1;
+        return Container(
+          margin: const EdgeInsets.only(top: 20, bottom: 16),
+          padding: const EdgeInsets.symmetric(horizontal: 4),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Icon(Icons.auto_awesome, size: 16, color: Color(0xFF818CF8)),
-              const SizedBox(width: 8),
-              Text(
-                'Suggested AI Business Prompts',
-                style: GoogleFonts.outfit(
-                  fontSize: 13,
-                  fontWeight: FontWeight.bold,
-                  color: const Color(0xFFCBD5E1),
-                ),
+              Row(
+                children: [
+                  const Icon(Icons.auto_awesome, size: 16, color: Color(0xFF818CF8)),
+                  const SizedBox(width: 8),
+                  Text(
+                    'Suggested AI Business Prompts',
+                    style: GoogleFonts.outfit(
+                      fontSize: 13,
+                      fontWeight: FontWeight.bold,
+                      color: const Color(0xFFCBD5E1),
+                    ),
+                  ),
+                ],
               ),
-            ],
-          ),
-          const SizedBox(height: 12),
-          LayoutBuilder(
-            builder: (context, constraints) {
-              final crossAxisCount = constraints.maxWidth > 580 ? 2 : 1;
-              return GridView.builder(
+              const SizedBox(height: 12),
+              GridView.builder(
                 shrinkWrap: true,
                 physics: const NeverScrollableScrollPhysics(),
                 gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                   crossAxisCount: crossAxisCount,
                   crossAxisSpacing: 10,
                   mainAxisSpacing: 10,
-                  mainAxisExtent: 80,
+                  mainAxisExtent: 88,
                 ),
                 itemCount: _quickActions.length,
                 itemBuilder: (context, idx) {
@@ -776,17 +838,18 @@ class _ChatViewState extends State<ChatView> {
                               ],
                             ),
                           ),
+                          const SizedBox(width: 4),
                           const Icon(Icons.arrow_forward_ios_rounded, size: 12, color: Color(0xFF64748B)),
                         ],
                       ),
                     ),
                   );
                 },
-              );
-            },
+              ),
+            ],
           ),
-        ],
-      ),
+        );
+      },
     );
   }
 
@@ -794,36 +857,41 @@ class _ChatViewState extends State<ChatView> {
     final comp = widget.selectedCompany;
     if (comp == null) {
       return Container(
-        width: 360,
+        width: double.infinity,
         decoration: BoxDecoration(
           color: const Color(0xFF0F172A),
           border: Border(
             left: BorderSide(color: Colors.white.withValues(alpha: 0.08)),
           ),
         ),
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            const Icon(Icons.business_outlined, size: 48, color: Color(0xFF64748B)),
-            const SizedBox(height: 12),
-            Text(
-              'No Enterprise Selected',
-              style: GoogleFonts.outfit(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold),
+        child: Center(
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.all(20),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                const Icon(Icons.business_outlined, size: 48, color: Color(0xFF64748B)),
+                const SizedBox(height: 12),
+                Text(
+                  'No Enterprise Selected',
+                  style: GoogleFonts.outfit(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 6),
+                Text(
+                  'Register or select an enterprise to inspect live knowledge base docs, specs, and strategic plans without colliding with chats.',
+                  textAlign: TextAlign.center,
+                  style: GoogleFonts.inter(color: const Color(0xFF94A3B8), fontSize: 12.5),
+                ),
+                const SizedBox(height: 16),
+                ElevatedButton.icon(
+                  onPressed: () => setState(() => _isCompanySliderOpen = false),
+                  icon: const Icon(Icons.close_rounded, size: 16),
+                  label: const Text('Close Slider'),
+                ),
+              ],
             ),
-            const SizedBox(height: 6),
-            Text(
-              'Register or select an enterprise to inspect live knowledge base docs, specs, and strategic plans without colliding with chats.',
-              textAlign: TextAlign.center,
-              style: GoogleFonts.inter(color: const Color(0xFF94A3B8), fontSize: 12.5),
-            ),
-            const SizedBox(height: 16),
-            ElevatedButton.icon(
-              onPressed: () => setState(() => _isCompanySliderOpen = false),
-              icon: const Icon(Icons.close_rounded, size: 16),
-              label: const Text('Close Slider'),
-            ),
-          ],
+          ),
         ),
       );
     }
@@ -838,7 +906,7 @@ class _ChatViewState extends State<ChatView> {
           }).toList();
 
     return Container(
-      width: 360,
+      width: double.infinity,
       decoration: BoxDecoration(
         color: const Color(0xFF0F172A),
         border: Border(
@@ -1279,8 +1347,8 @@ class _ChatViewState extends State<ChatView> {
           ],
           Flexible(
             child: Container(
-              constraints: BoxConstraints(
-                maxWidth: MediaQuery.of(context).size.width * 0.78,
+              constraints: const BoxConstraints(
+                maxWidth: 800,
               ),
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
