@@ -294,6 +294,96 @@ class _CompanyStudioViewState extends State<CompanyStudioView> {
     }
   }
 
+  Future<void> _confirmDeleteCompany(Company company) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: const Color(0xFF0F172A),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+          side: const BorderSide(color: Color(0xFF1E293B)),
+        ),
+        title: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: const Color(0xFFEF4444).withValues(alpha: 0.15),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: const Icon(Icons.delete_forever_rounded, color: Color(0xFFEF4444), size: 22),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Text(
+                'Delete Enterprise?',
+                style: GoogleFonts.outfit(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 18),
+              ),
+            ),
+          ],
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            RichText(
+              text: TextSpan(
+                style: GoogleFonts.inter(fontSize: 13.5, color: const Color(0xFFCBD5E1), height: 1.4),
+                children: [
+                  const TextSpan(text: 'Are you sure you want to permanently delete '),
+                  TextSpan(
+                    text: '"${company.name}"',
+                    style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.white),
+                  ),
+                  const TextSpan(text: '?\n\nThis action cannot be undone. All company-specific AI tasks, knowledge base files, leads, and automations will be removed.'),
+                ],
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text('Cancel', style: TextStyle(color: Color(0xFF94A3B8))),
+          ),
+          ElevatedButton.icon(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFFEF4444),
+              foregroundColor: Colors.white,
+            ),
+            onPressed: () => Navigator.pop(ctx, true),
+            icon: const Icon(Icons.delete_rounded, size: 16),
+            label: const Text('Confirm Delete'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed == true) {
+      try {
+        await widget.apiService.deleteCompany(company.id);
+        widget.onRefresh();
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('🗑️ Enterprise "${company.name}" deleted.'),
+              backgroundColor: const Color(0xFFEF4444),
+            ),
+          );
+        }
+      } catch (e) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Failed to delete enterprise: $e'),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
+      }
+    }
+  }
+
   void _showCreateCompanyDialog() {
     final nameCtrl = TextEditingController();
     final indCtrl = TextEditingController(text: 'SaaS & Enterprise Automation');
@@ -410,7 +500,7 @@ class _CompanyStudioViewState extends State<CompanyStudioView> {
 
             // Enterprise Selector Cards Carousel
             SizedBox(
-              height: 85,
+              height: 90,
               child: widget.companies.isEmpty
                   ? Center(
                       child: Text(
@@ -430,8 +520,8 @@ class _CompanyStudioViewState extends State<CompanyStudioView> {
                             onTap: () => widget.onSelectCompany(comp),
                             borderRadius: BorderRadius.circular(14),
                             child: Container(
-                              width: 220,
-                              padding: const EdgeInsets.all(14),
+                              width: 240,
+                              padding: const EdgeInsets.all(12),
                               decoration: BoxDecoration(
                                 color: isSelected
                                     ? const Color(0xFF6366F1).withValues(alpha: 0.2)
@@ -463,6 +553,14 @@ class _CompanyStudioViewState extends State<CompanyStudioView> {
                                         ),
                                       ),
                                       StatusChip(status: comp.status, compact: true),
+                                      const SizedBox(width: 4),
+                                      IconButton(
+                                        icon: const Icon(Icons.delete_outline_rounded, size: 16, color: Color(0xFFF87171)),
+                                        tooltip: 'Delete "${comp.name}"',
+                                        padding: EdgeInsets.zero,
+                                        constraints: const BoxConstraints(minWidth: 24, minHeight: 24),
+                                        onPressed: () => _confirmDeleteCompany(comp),
+                                      ),
                                     ],
                                   ),
                                   const SizedBox(height: 4),
@@ -723,6 +821,17 @@ class _CompanyStudioViewState extends State<CompanyStudioView> {
                 style: GoogleFonts.outfit(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white),
               ),
               const Spacer(),
+              OutlinedButton.icon(
+                style: OutlinedButton.styleFrom(
+                  foregroundColor: const Color(0xFFF87171),
+                  side: const BorderSide(color: Color(0xFFEF4444)),
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                ),
+                onPressed: () => _confirmDeleteCompany(c),
+                icon: const Icon(Icons.delete_outline_rounded, size: 16),
+                label: const Text('Delete Enterprise'),
+              ),
+              const SizedBox(width: 8),
               ElevatedButton.icon(
                 style: ElevatedButton.styleFrom(padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10)),
                 onPressed: _isSaving ? null : _saveProfile,

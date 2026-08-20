@@ -234,8 +234,14 @@ def delete_company(company_id: int):
         if not comp:
             raise HTTPException(status_code=404, detail="Company not found")
        
+        # Cascade delete all company-associated records
         db.query(AgentTask).filter(AgentTask.company_id == company_id).delete()
         db.query(SocialAccount).filter(SocialAccount.company_id == company_id).delete()
+        db.query(ChatMessageRecord).filter(ChatMessageRecord.company_id == company_id).delete()
+        db.query(CompanyKnowledge).filter(CompanyKnowledge.company_id == company_id).delete()
+        db.query(LeadInteraction).filter(LeadInteraction.company_id == company_id).delete()
+        db.query(InboundLead).filter(InboundLead.company_id == company_id).delete()
+        db.query(IntegrationConfig).filter(IntegrationConfig.company_id == company_id).delete()
         db.delete(comp)
         db.commit()
         return {"status": "deleted", "company_id": company_id}

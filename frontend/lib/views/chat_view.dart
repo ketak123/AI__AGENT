@@ -4,17 +4,21 @@ import 'package:google_fonts/google_fonts.dart';
 import '../core/constants.dart';
 import '../models/chat_message.dart';
 import '../models/company.dart';
+import '../models/lead.dart';
 import '../services/api_service.dart';
 import '../widgets/markdown_text.dart';
+import '../widgets/status_chip.dart';
 
 class ChatView extends StatefulWidget {
   final ApiService apiService;
   final Company? selectedCompany;
+  final VoidCallback? onRefreshCompanies;
 
   const ChatView({
     super.key,
     required this.apiService,
     this.selectedCompany,
+    this.onRefreshCompanies,
   });
 
   @override
@@ -31,6 +35,13 @@ class _ChatViewState extends State<ChatView> {
   String _statusText = 'Ready';
   String _llmProvider = 'Loading AI Engine...';
   bool _isLiveAI = false;
+
+  // Gemini-style sliding Company Data Panel state
+  bool _isCompanySliderOpen = false;
+  List<KnowledgeItem> _companyKnowledge = [];
+  bool _isLoadingKnowledge = false;
+  String _knowledgeSearchQuery = '';
+  int _sliderTabIndex = 0; // 0: Specs & KPIs, 1: Knowledge Base, 2: Business Plan
 
   final List<Map<String, String>> _quickActions = [
     {
@@ -69,6 +80,7 @@ class _ChatViewState extends State<ChatView> {
   void initState() {
     super.initState();
     _loadLLMStatus();
+    _loadCompanyKnowledge();
     _messages.add(
       ChatMessage(
         sender: 'AI Manager',
@@ -83,6 +95,33 @@ class _ChatViewState extends State<ChatView> {
         ],
       ),
     );
+  }
+
+  @override
+  void didUpdateWidget(covariant ChatView oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.selectedCompany?.id != widget.selectedCompany?.id) {
+      _loadCompanyKnowledge();
+    }
+  }
+
+  Future<void> _loadCompanyKnowledge() async {
+    if (widget.selectedCompany == null) {
+      setState(() => _companyKnowledge = []);
+      return;
+    }
+    setState(() => _isLoadingKnowledge = true);
+    try {
+      final items = await widget.apiService.getCompanyKnowledge(widget.selectedCompany!.id);
+      if (mounted) {
+        setState(() {
+          _companyKnowledge = items;
+          _isLoadingKnowledge = false;
+        });
+      }
+    } catch (_) {
+      if (mounted) setState(() => _isLoadingKnowledge = false);
+    }
   }
 
   Future<void> _loadLLMStatus() async {
@@ -323,234 +362,782 @@ class _ChatViewState extends State<ChatView> {
 
     return Scaffold(
       backgroundColor: Colors.transparent,
-      body: Column(
+      body: Row(
         children: [
-          // Top Ribbon with Agent Selector & AI Model Status
+          // Main Chat Area (Full width when slider is closed, balanced when slider is open)
+          Expanded(
+            child: Column(
+              children: [
+                // Top Ribbon with Agent Selector, AI Keys & Gemini-style Company Slider Toggle
+                Container(
+                  height: 52,
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF0F172A),
+                    border: Border(
+                      bottom: BorderSide(color: Colors.white.withValues(alpha: 0.06)),
+                    ),
+                  ),
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: ListView(
+                          scrollDirection: Axis.horizontal,
+                          children: AppConstants.agentRoles.map((role) {
+                            final isSelected = role['id'] == _selectedAgent;
+                            final color = role['color'] as Color;
+                            return Padding(
+                              padding: const EdgeInsets.only(right: 8),
+                              child: ChoiceChip(
+                                avatar: Icon(
+                                  role['icon'] as IconData,
+                                  size: 16,
+                                  color: isSelected ? Colors.white : color,
+                                ),
+                                label: Text(
+                                  role['name'] as String,
+                                  style: GoogleFonts.inter(
+                                    fontSize: 12,
+                                    fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
+                                    color: isSelected ? Colors.white : const Color(0xFF94A3B8),
+                                  ),
+                                ),
+                                selected: isSelected,
+                                selectedColor: color.withValues(alpha: 0.8),
+                                backgroundColor: const Color(0xFF1E293B).withValues(alpha: 0.5),
+                                onSelected: (val) {
+                                  if (val) {
+                                    setState(() => _selectedAgent = role['id'] as String);
+                                  }
+                                },
+                              ),
+                            );
+                          }).toList(),
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+
+                      // Gemini-style Company Data Slider Toggle Pill
+                      InkWell(
+                        onTap: () {
+                          setState(() {
+                            _isCompanySliderOpen = !_isCompanySliderOpen;
+                            if (_isCompanySliderOpen && widget.selectedCompany != null) {
+                              _loadCompanyKnowledge();
+                            }
+                          });
+                        },
+                        borderRadius: BorderRadius.circular(8),
+                        child: AnimatedContainer(
+                          duration: const Duration(milliseconds: 200),
+                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                          decoration: BoxDecoration(
+                            color: _isCompanySliderOpen
+                                ? const Color(0xFF6366F1).withValues(alpha: 0.25)
+                                : const Color(0xFF1E293B).withValues(alpha: 0.6),
+                            borderRadius: BorderRadius.circular(8),
+                            border: Border.all(
+                              color: _isCompanySliderOpen ? const Color(0xFF818CF8) : const Color(0xFF334155),
+                            ),
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(
+                                _isCompanySliderOpen ? Icons.view_sidebar_rounded : Icons.view_sidebar_outlined,
+                                size: 15,
+                                color: _isCompanySliderOpen ? const Color(0xFF818CF8) : const Color(0xFF94A3B8),
+                              ),
+                              const SizedBox(width: 6),
+                              Text(
+                                _isCompanySliderOpen ? 'Company Slider: ON' : 'Company Data Slider',
+                                style: GoogleFonts.inter(
+                                  fontSize: 11.5,
+                                  fontWeight: FontWeight.w600,
+                                  color: _isCompanySliderOpen ? Colors.white : const Color(0xFF94A3B8),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+
+                      const SizedBox(width: 8),
+
+                      // AI Brain Keys Button
+                      InkWell(
+                        onTap: _showAIBrainSettingsDialog,
+                        borderRadius: BorderRadius.circular(8),
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                          decoration: BoxDecoration(
+                            color: _isLiveAI ? const Color(0xFF10B981).withValues(alpha: 0.15) : const Color(0xFF6366F1).withValues(alpha: 0.15),
+                            borderRadius: BorderRadius.circular(8),
+                            border: Border.all(
+                              color: _isLiveAI ? const Color(0xFF10B981).withValues(alpha: 0.4) : const Color(0xFF6366F1).withValues(alpha: 0.4),
+                            ),
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(
+                                _isLiveAI ? Icons.auto_awesome_rounded : Icons.psychology_outlined,
+                                size: 14,
+                                color: _isLiveAI ? const Color(0xFF34D399) : const Color(0xFFA5B4FC),
+                              ),
+                              const SizedBox(width: 6),
+                              Text(
+                                _isLiveAI ? 'Live Gemini AI' : 'AI Keys',
+                                style: GoogleFonts.inter(
+                                  fontSize: 11.5,
+                                  fontWeight: FontWeight.bold,
+                                  color: _isLiveAI ? const Color(0xFF34D399) : const Color(0xFFA5B4FC),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+
+                // Quick Action Feature Chips
+                Container(
+                  height: 48,
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF0B0F19),
+                    border: Border(
+                      bottom: BorderSide(color: Colors.white.withValues(alpha: 0.04)),
+                    ),
+                  ),
+                  child: ListView(
+                    scrollDirection: Axis.horizontal,
+                    children: _quickActions.map((action) {
+                      return Padding(
+                        padding: const EdgeInsets.only(right: 8),
+                        child: ActionChip(
+                          label: Text(
+                            action['label']!,
+                            style: GoogleFonts.inter(
+                              fontSize: 12,
+                              color: const Color(0xFFE2E8F0),
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                          backgroundColor: const Color(0xFF1E1B4B).withValues(alpha: 0.5),
+                          side: BorderSide(color: const Color(0xFF6366F1).withValues(alpha: 0.3)),
+                          onPressed: () => _sendMessage(action['prompt']!, action['agent']),
+                        ),
+                      );
+                    }).toList(),
+                  ),
+                ),
+
+                // Chat Messages List
+                Expanded(
+                  child: ListView.builder(
+                    controller: _scrollController,
+                    padding: const EdgeInsets.all(16),
+                    itemCount: _messages.length,
+                    itemBuilder: (context, index) {
+                      final msg = _messages[index];
+                      return _buildMessageBubble(msg);
+                    },
+                  ),
+                ),
+
+                // Status bar
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 6),
+                  color: const Color(0xFF0F172A),
+                  child: Row(
+                    children: [
+                      if (_isLoading) ...[
+                        const SizedBox(
+                          width: 14,
+                          height: 14,
+                          child: CircularProgressIndicator(strokeWidth: 2, color: Color(0xFF6366F1)),
+                        ),
+                        const SizedBox(width: 8),
+                      ] else ...[
+                        const Icon(Icons.circle, size: 10, color: Color(0xFF10B981)),
+                        const SizedBox(width: 8),
+                      ],
+                      Text(
+                        'Active Agent: ${currentAgentMeta['name']} • $_statusText',
+                        style: GoogleFonts.inter(
+                          fontSize: 11.5,
+                          color: const Color(0xFF94A3B8),
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                      const Spacer(),
+                      if (widget.selectedCompany != null) ...[
+                        InkWell(
+                          onTap: () {
+                            setState(() {
+                              _isCompanySliderOpen = !_isCompanySliderOpen;
+                              if (_isCompanySliderOpen) _loadCompanyKnowledge();
+                            });
+                          },
+                          borderRadius: BorderRadius.circular(6),
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                            child: Row(
+                              children: [
+                                Text(
+                                  '🏢 ${widget.selectedCompany!.name}',
+                                  style: GoogleFonts.inter(
+                                    fontSize: 11.5,
+                                    color: const Color(0xFFA5B4FC),
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                                const SizedBox(width: 4),
+                                Icon(
+                                  _isCompanySliderOpen ? Icons.chevron_right_rounded : Icons.chevron_left_rounded,
+                                  size: 14,
+                                  color: const Color(0xFFA5B4FC),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ],
+                    ],
+                  ),
+                ),
+
+                // Input Bar
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF131B2E),
+                    border: Border(
+                      top: BorderSide(color: Colors.white.withValues(alpha: 0.08)),
+                    ),
+                  ),
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: TextField(
+                          controller: _controller,
+                          textInputAction: TextInputAction.send,
+                          onSubmitted: (val) => _sendMessage(val),
+                          maxLines: null,
+                          style: GoogleFonts.inter(fontSize: 14, color: Colors.white),
+                          decoration: InputDecoration(
+                            hintText: 'Ask ${_selectedAgent.replaceAll('_', ' ')} or execute a business command...',
+                            hintStyle: GoogleFonts.inter(fontSize: 13.5, color: const Color(0xFF64748B)),
+                            fillColor: const Color(0xFF0B0F19),
+                            filled: true,
+                            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12),
+                              borderSide: const BorderSide(color: Color(0xFF1E293B)),
+                            ),
+                            enabledBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12),
+                              borderSide: const BorderSide(color: Color(0xFF1E293B)),
+                            ),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      IconButton.filled(
+                        style: IconButton.styleFrom(
+                          backgroundColor: const Color(0xFF6366F1),
+                          padding: const EdgeInsets.all(12),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                        ),
+                        icon: _isLoading
+                            ? const SizedBox(
+                                width: 20,
+                                height: 20,
+                                child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                              )
+                            : const Icon(Icons.send_rounded, color: Colors.white, size: 20),
+                        onPressed: _isLoading ? null : () => _sendMessage(_controller.text),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+
+          // Gemini-Style Sliding Company Intelligence Drawer
+          AnimatedContainer(
+            duration: const Duration(milliseconds: 280),
+            curve: Curves.easeInOutCubic,
+            width: _isCompanySliderOpen ? 360 : 0,
+            child: _isCompanySliderOpen ? _buildCompanyIntelligenceSlider() : const SizedBox.shrink(),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildCompanyIntelligenceSlider() {
+    final comp = widget.selectedCompany;
+    if (comp == null) {
+      return Container(
+        width: 360,
+        decoration: BoxDecoration(
+          color: const Color(0xFF0F172A),
+          border: Border(
+            left: BorderSide(color: Colors.white.withValues(alpha: 0.08)),
+          ),
+        ),
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Icon(Icons.business_outlined, size: 48, color: Color(0xFF64748B)),
+            const SizedBox(height: 12),
+            Text(
+              'No Enterprise Selected',
+              style: GoogleFonts.outfit(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 6),
+            Text(
+              'Register or select an enterprise to inspect live knowledge base docs, specs, and strategic plans without colliding with chats.',
+              textAlign: TextAlign.center,
+              style: GoogleFonts.inter(color: const Color(0xFF94A3B8), fontSize: 12.5),
+            ),
+            const SizedBox(height: 16),
+            ElevatedButton.icon(
+              onPressed: () => setState(() => _isCompanySliderOpen = false),
+              icon: const Icon(Icons.close_rounded, size: 16),
+              label: const Text('Close Slider'),
+            ),
+          ],
+        ),
+      );
+    }
+
+    final filteredKnowledge = _knowledgeSearchQuery.trim().isEmpty
+        ? _companyKnowledge
+        : _companyKnowledge.where((k) {
+            final q = _knowledgeSearchQuery.toLowerCase();
+            return k.title.toLowerCase().contains(q) ||
+                k.content.toLowerCase().contains(q) ||
+                k.category.toLowerCase().contains(q);
+          }).toList();
+
+    return Container(
+      width: 360,
+      decoration: BoxDecoration(
+        color: const Color(0xFF0F172A),
+        border: Border(
+          left: BorderSide(color: Colors.white.withValues(alpha: 0.08)),
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Slider Header
           Container(
-            height: 52,
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
             decoration: BoxDecoration(
-              color: const Color(0xFF0F172A),
+              color: const Color(0xFF131B2E),
               border: Border(
                 bottom: BorderSide(color: Colors.white.withValues(alpha: 0.06)),
               ),
             ),
             child: Row(
               children: [
+                Container(
+                  padding: const EdgeInsets.all(6),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF6366F1).withValues(alpha: 0.2),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: const Icon(Icons.business_rounded, color: Color(0xFF818CF8), size: 18),
+                ),
+                const SizedBox(width: 10),
                 Expanded(
-                  child: ListView(
-                    scrollDirection: Axis.horizontal,
-                    children: AppConstants.agentRoles.map((role) {
-                      final isSelected = role['id'] == _selectedAgent;
-                      final color = role['color'] as Color;
-                      return Padding(
-                        padding: const EdgeInsets.only(right: 8),
-                        child: ChoiceChip(
-                          avatar: Icon(
-                            role['icon'] as IconData,
-                            size: 16,
-                            color: isSelected ? Colors.white : color,
-                          ),
-                          label: Text(
-                            role['name'] as String,
-                            style: GoogleFonts.inter(
-                              fontSize: 12,
-                              fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
-                              color: isSelected ? Colors.white : const Color(0xFF94A3B8),
-                            ),
-                          ),
-                          selected: isSelected,
-                          selectedColor: color.withValues(alpha: 0.8),
-                          backgroundColor: const Color(0xFF1E293B).withValues(alpha: 0.5),
-                          onSelected: (val) {
-                            if (val) {
-                              setState(() => _selectedAgent = role['id'] as String);
-                            }
-                          },
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        comp.name,
+                        style: GoogleFonts.outfit(
+                          fontSize: 15,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
                         ),
-                      );
-                    }).toList(),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      Text(
+                        'Company Intelligence & Specs',
+                        style: GoogleFonts.inter(
+                          fontSize: 11,
+                          color: const Color(0xFF94A3B8),
+                        ),
+                      ),
+                    ],
                   ),
                 ),
-                const SizedBox(width: 8),
-                InkWell(
-                  onTap: _showAIBrainSettingsDialog,
-                  borderRadius: BorderRadius.circular(8),
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                    decoration: BoxDecoration(
-                      color: _isLiveAI ? const Color(0xFF10B981).withValues(alpha: 0.15) : const Color(0xFF6366F1).withValues(alpha: 0.15),
-                      borderRadius: BorderRadius.circular(8),
-                      border: Border.all(
-                        color: _isLiveAI ? const Color(0xFF10B981).withValues(alpha: 0.4) : const Color(0xFF6366F1).withValues(alpha: 0.4),
-                      ),
-                    ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Icon(
-                          _isLiveAI ? Icons.auto_awesome_rounded : Icons.psychology_outlined,
-                          size: 14,
-                          color: _isLiveAI ? const Color(0xFF34D399) : const Color(0xFFA5B4FC),
-                        ),
-                        const SizedBox(width: 6),
-                        Text(
-                          _isLiveAI ? 'Live Gemini AI' : 'AI Model Keys',
-                          style: GoogleFonts.inter(
-                            fontSize: 11.5,
-                            fontWeight: FontWeight.bold,
-                            color: _isLiveAI ? const Color(0xFF34D399) : const Color(0xFFA5B4FC),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
+                StatusChip(status: comp.status, compact: true),
+                const SizedBox(width: 4),
+                IconButton(
+                  icon: const Icon(Icons.close_rounded, color: Color(0xFF94A3B8), size: 20),
+                  tooltip: 'Close Slider (Full Chat View)',
+                  padding: EdgeInsets.zero,
+                  constraints: const BoxConstraints(minWidth: 28, minHeight: 28),
+                  onPressed: () => setState(() => _isCompanySliderOpen = false),
                 ),
               ],
             ),
           ),
 
-          // Quick Action Feature Chips
+          // Slider Tab Selector (Gemini Style)
           Container(
-            height: 48,
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-            decoration: BoxDecoration(
-              color: const Color(0xFF0B0F19),
-              border: Border(
-                bottom: BorderSide(color: Colors.white.withValues(alpha: 0.04)),
-              ),
-            ),
-            child: ListView(
-              scrollDirection: Axis.horizontal,
-              children: _quickActions.map((action) {
-                return Padding(
-                  padding: const EdgeInsets.only(right: 8),
-                  child: ActionChip(
-                    label: Text(
-                      action['label']!,
-                      style: GoogleFonts.inter(
-                        fontSize: 12,
-                        color: const Color(0xFFE2E8F0),
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                    backgroundColor: const Color(0xFF1E1B4B).withValues(alpha: 0.5),
-                    side: BorderSide(color: const Color(0xFF6366F1).withValues(alpha: 0.3)),
-                    onPressed: () => _sendMessage(action['prompt']!, action['agent']),
-                  ),
-                );
-              }).toList(),
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+            color: const Color(0xFF0B0F19),
+            child: Row(
+              children: [
+                _sliderTabItem(0, 'Specs', Icons.analytics_outlined),
+                const SizedBox(width: 4),
+                _sliderTabItem(1, 'Knowledge (${_companyKnowledge.length})', Icons.menu_book_rounded),
+                const SizedBox(width: 4),
+                _sliderTabItem(2, 'Plan', Icons.description_outlined),
+              ],
             ),
           ),
 
-          // Chat Messages List
+          // Slider Tab Content
           Expanded(
-            child: ListView.builder(
-              controller: _scrollController,
-              padding: const EdgeInsets.all(16),
-              itemCount: _messages.length,
-              itemBuilder: (context, index) {
-                final msg = _messages[index];
-                return _buildMessageBubble(msg);
-              },
+            child: _sliderTabIndex == 0
+                ? _buildSliderSpecsTab(comp)
+                : _sliderTabIndex == 1
+                    ? _buildSliderKnowledgeTab(filteredKnowledge)
+                    : _buildSliderPlanTab(comp),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _sliderTabItem(int index, String label, IconData icon) {
+    final isSelected = _sliderTabIndex == index;
+    return Expanded(
+      child: InkWell(
+        onTap: () => setState(() => _sliderTabIndex = index),
+        borderRadius: BorderRadius.circular(8),
+        child: Container(
+          padding: const EdgeInsets.symmetric(vertical: 6),
+          alignment: Alignment.center,
+          decoration: BoxDecoration(
+            color: isSelected ? const Color(0xFF6366F1).withValues(alpha: 0.25) : Colors.transparent,
+            borderRadius: BorderRadius.circular(8),
+            border: Border.all(
+              color: isSelected ? const Color(0xFF6366F1).withValues(alpha: 0.5) : Colors.transparent,
             ),
           ),
-
-          // Status bar
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 6),
-            color: const Color(0xFF0F172A),
-            child: Row(
-              children: [
-                if (_isLoading) ...[
-                  const SizedBox(
-                    width: 14,
-                    height: 14,
-                    child: CircularProgressIndicator(strokeWidth: 2, color: Color(0xFF6366F1)),
-                  ),
-                  const SizedBox(width: 8),
-                ] else ...[
-                  const Icon(Icons.circle, size: 10, color: Color(0xFF10B981)),
-                  const SizedBox(width: 8),
-                ],
-                Text(
-                  'Active Agent: ${currentAgentMeta['name']} • $_statusText',
-                  style: GoogleFonts.inter(
-                    fontSize: 11.5,
-                    color: const Color(0xFF94A3B8),
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-                const Spacer(),
-                if (widget.selectedCompany != null)
-                  Text(
-                    '🏢 ${widget.selectedCompany!.name}',
-                    style: GoogleFonts.inter(
-                      fontSize: 11.5,
-                      color: const Color(0xFFA5B4FC),
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-              ],
-            ),
-          ),
-
-          // Input Bar
-          Container(
-            padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(
-              color: const Color(0xFF131B2E),
-              border: Border(
-                top: BorderSide(color: Colors.white.withValues(alpha: 0.08)),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(
+                icon,
+                size: 13,
+                color: isSelected ? const Color(0xFF818CF8) : const Color(0xFF94A3B8),
               ),
-            ),
-            child: Row(
-              children: [
-                Expanded(
-                  child: TextField(
-                    controller: _controller,
-                    textInputAction: TextInputAction.send,
-                    onSubmitted: (val) => _sendMessage(val),
-                    maxLines: null,
-                    style: GoogleFonts.inter(fontSize: 14, color: Colors.white),
-                    decoration: InputDecoration(
-                      hintText: 'Ask ${_selectedAgent.replaceAll('_', ' ')} or execute a business command...',
-                      hintStyle: GoogleFonts.inter(fontSize: 13.5, color: const Color(0xFF64748B)),
-                      fillColor: const Color(0xFF0B0F19),
-                      filled: true,
-                      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                        borderSide: const BorderSide(color: Color(0xFF1E293B)),
-                      ),
-                      enabledBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                        borderSide: const BorderSide(color: Color(0xFF1E293B)),
-                      ),
-                    ),
+              const SizedBox(width: 4),
+              Flexible(
+                child: Text(
+                  label,
+                  style: GoogleFonts.inter(
+                    fontSize: 11,
+                    fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
+                    color: isSelected ? Colors.white : const Color(0xFF94A3B8),
                   ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                 ),
-                const SizedBox(width: 8),
-                IconButton.filled(
-                  style: IconButton.styleFrom(
-                    backgroundColor: const Color(0xFF6366F1),
-                    padding: const EdgeInsets.all(12),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                  ),
-                  icon: _isLoading
-                      ? const SizedBox(
-                          width: 20,
-                          height: 20,
-                          child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
-                        )
-                      : const Icon(Icons.send_rounded, color: Colors.white, size: 20),
-                  onPressed: _isLoading ? null : () => _sendMessage(_controller.text),
-                ),
-              ],
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSliderSpecsTab(Company comp) {
+    return ListView(
+      padding: const EdgeInsets.all(14),
+      children: [
+        _specCard('Industry & Niche', comp.industry, Icons.category_outlined, const Color(0xFF60A5FA)),
+        const SizedBox(height: 10),
+        _specCard('Target Geography', comp.location, Icons.location_on_outlined, const Color(0xFF34D399)),
+        const SizedBox(height: 10),
+        _specCard('Business Model', comp.businessModel, Icons.layers_outlined, const Color(0xFFA78BFA)),
+        const SizedBox(height: 10),
+        _specCard('Operating Budget', comp.budget, Icons.payments_outlined, const Color(0xFFFBBF24)),
+        const SizedBox(height: 10),
+        _specCard('Target Audience / ICP', comp.targetAudience, Icons.group_outlined, const Color(0xFFF472B6)),
+        const SizedBox(height: 10),
+        _specCard('Strategic Goals', comp.goals, Icons.flag_outlined, const Color(0xFF38BDF8)),
+        const SizedBox(height: 18),
+
+        Text(
+          '⚡ 1-Click Tailored Company Prompts',
+          style: GoogleFonts.outfit(fontSize: 13, fontWeight: FontWeight.bold, color: Colors.white),
+        ),
+        const SizedBox(height: 8),
+        _tailoredPromptChip(
+          '📢 Create ad campaign for ${comp.name}',
+          'Draft a high-converting multi-channel marketing campaign specifically designed for ${comp.name} targeting ${comp.targetAudience}.',
+          'marketing',
+        ),
+        const SizedBox(height: 6),
+        _tailoredPromptChip(
+          '💰 Margin forecast for ${comp.budget}',
+          'Analyze our unit economics and calculate expected gross and net margins assuming our operating budget is ${comp.budget}.',
+          'finance',
+        ),
+        const SizedBox(height: 6),
+        _tailoredPromptChip(
+          '🎯 30-Day Growth Strategy',
+          'Formulate an actionable 30-day growth strategy for ${comp.name} in the ${comp.industry} sector with concrete KPIs.',
+          'strategy',
+        ),
+      ],
+    );
+  }
+
+  Widget _specCard(String title, String value, IconData icon, Color color) {
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: const Color(0xFF131B2E),
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(color: const Color(0xFF1E293B)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(icon, size: 14, color: color),
+              const SizedBox(width: 6),
+              Text(
+                title,
+                style: GoogleFonts.inter(fontSize: 11, fontWeight: FontWeight.w600, color: const Color(0xFF94A3B8)),
+              ),
+            ],
+          ),
+          const SizedBox(height: 4),
+          Text(
+            value.isNotEmpty ? value : 'Not configured yet',
+            style: GoogleFonts.inter(
+              fontSize: 12.5,
+              fontWeight: FontWeight.w500,
+              color: value.isNotEmpty ? Colors.white : const Color(0xFF64748B),
             ),
           ),
         ],
       ),
+    );
+  }
+
+  Widget _tailoredPromptChip(String label, String prompt, String agent) {
+    return InkWell(
+      onTap: () => _sendMessage(prompt, agent),
+      borderRadius: BorderRadius.circular(8),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+        decoration: BoxDecoration(
+          color: const Color(0xFF1E1B4B).withValues(alpha: 0.4),
+          borderRadius: BorderRadius.circular(8),
+          border: Border.all(color: const Color(0xFF6366F1).withValues(alpha: 0.3)),
+        ),
+        child: Row(
+          children: [
+            Expanded(
+              child: Text(
+                label,
+                style: GoogleFonts.inter(fontSize: 11.5, color: const Color(0xFFA5B4FC), fontWeight: FontWeight.w500),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
+            const Icon(Icons.arrow_forward_rounded, size: 14, color: Color(0xFF818CF8)),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSliderKnowledgeTab(List<KnowledgeItem> items) {
+    return Column(
+      children: [
+        Padding(
+          padding: const EdgeInsets.all(12),
+          child: TextField(
+            onChanged: (val) => setState(() => _knowledgeSearchQuery = val),
+            style: const TextStyle(color: Colors.white, fontSize: 13),
+            decoration: InputDecoration(
+              hintText: 'Search knowledge docs...',
+              hintStyle: const TextStyle(color: Color(0xFF64748B), fontSize: 12),
+              prefixIcon: const Icon(Icons.search, size: 16, color: Color(0xFF94A3B8)),
+              fillColor: const Color(0xFF131B2E),
+              filled: true,
+              contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+              border: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: const BorderSide(color: Color(0xFF1E293B))),
+              enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: const BorderSide(color: Color(0xFF1E293B))),
+            ),
+          ),
+        ),
+        Expanded(
+          child: _isLoadingKnowledge
+              ? const Center(child: CircularProgressIndicator(color: Color(0xFF6366F1)))
+              : items.isEmpty
+                  ? Center(
+                      child: Padding(
+                        padding: const EdgeInsets.all(20),
+                        child: Text(
+                          _companyKnowledge.isEmpty
+                              ? 'No documents in knowledge base.\nGo to Company Studio to seed or add documents!'
+                              : 'No documents match "$_knowledgeSearchQuery".',
+                          textAlign: TextAlign.center,
+                          style: GoogleFonts.inter(color: const Color(0xFF94A3B8), fontSize: 12),
+                        ),
+                      ),
+                    )
+                  : ListView.separated(
+                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                      itemCount: items.length,
+                      separatorBuilder: (context, index) => const SizedBox(height: 8),
+                      itemBuilder: (context, index) {
+                        final item = items[index];
+                        return Container(
+                          padding: const EdgeInsets.all(10),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFF131B2E),
+                            borderRadius: BorderRadius.circular(8),
+                            border: Border.all(color: const Color(0xFF1E293B)),
+                          ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Row(
+                                children: [
+                                  Expanded(
+                                    child: Text(
+                                      item.title,
+                                      style: GoogleFonts.inter(fontSize: 12.5, fontWeight: FontWeight.bold, color: const Color(0xFFA5B4FC)),
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                  ),
+                                  StatusChip(status: item.category.toUpperCase(), compact: true),
+                                ],
+                              ),
+                              const SizedBox(height: 4),
+                              Text(
+                                item.content,
+                                style: GoogleFonts.inter(fontSize: 11.5, color: const Color(0xFF94A3B8)),
+                                maxLines: 3,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                              const SizedBox(height: 6),
+                              Align(
+                                alignment: Alignment.centerRight,
+                                child: TextButton.icon(
+                                  style: TextButton.styleFrom(
+                                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                                    visualDensity: VisualDensity.compact,
+                                  ),
+                                  onPressed: () {
+                                    final snippet = 'Regarding ${item.title} (${item.category}):\n"${item.content.length > 250 ? '${item.content.substring(0, 250)}...' : item.content}"\n\nQuestion: ';
+                                    setState(() {
+                                      _controller.text = snippet;
+                                    });
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      SnackBar(
+                                        content: Text('Injected "${item.title}" into prompt!'),
+                                        backgroundColor: const Color(0xFF6366F1),
+                                        duration: const Duration(seconds: 1),
+                                      ),
+                                    );
+                                  },
+                                  icon: const Icon(Icons.input_rounded, size: 13, color: Color(0xFF38BDF8)),
+                                  label: Text(
+                                    'Inject into Prompt',
+                                    style: GoogleFonts.inter(fontSize: 11, color: const Color(0xFF38BDF8), fontWeight: FontWeight.w600),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        );
+                      },
+                    ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildSliderPlanTab(Company comp) {
+    final plan = comp.generatedPlan;
+    if (plan == null || plan.trim().isEmpty) {
+      return Center(
+        child: Padding(
+          padding: const EdgeInsets.all(20),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Icon(Icons.description_outlined, size: 36, color: Color(0xFF64748B)),
+              const SizedBox(height: 10),
+              Text(
+                'No Strategy Plan Generated',
+                style: GoogleFonts.outfit(color: Colors.white, fontSize: 14, fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 4),
+              Text(
+                'Open Company Studio and click "Generate Plan" to synthesize a complete 8-section operating master plan.',
+                textAlign: TextAlign.center,
+                style: GoogleFonts.inter(color: const Color(0xFF94A3B8), fontSize: 12),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
+    return ListView(
+      padding: const EdgeInsets.all(14),
+      children: [
+        Row(
+          children: [
+            Text(
+              'Master Strategy Plan',
+              style: GoogleFonts.outfit(fontSize: 14, fontWeight: FontWeight.bold, color: Colors.white),
+            ),
+            const Spacer(),
+            IconButton(
+              icon: const Icon(Icons.copy_rounded, size: 16, color: Color(0xFF94A3B8)),
+              tooltip: 'Copy Business Plan',
+              padding: EdgeInsets.zero,
+              constraints: const BoxConstraints(),
+              onPressed: () {
+                Clipboard.setData(ClipboardData(text: plan));
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Plan copied to clipboard!'), duration: Duration(seconds: 1)),
+                );
+              },
+            ),
+          ],
+        ),
+        const Divider(color: Color(0xFF1E293B), height: 16),
+        MarkdownText(text: plan),
+      ],
     );
   }
 
