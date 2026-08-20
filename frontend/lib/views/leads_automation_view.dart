@@ -39,7 +39,7 @@ class _LeadsAutomationViewState extends State<LeadsAutomationView> {
 
   final List<Map<String, String>> _samplePresets = [
     {
-      'label': '☕ Indian Tea Wholesale (Assam CTC)',
+      'label': 'Tea Wholesale (Assam CTC)',
       'name': 'Vikram Mehra',
       'phone': '+91 98220 12345',
       'email': 'vikram@tajhotelsgroup.demo',
@@ -47,7 +47,7 @@ class _LeadsAutomationViewState extends State<LeadsAutomationView> {
       'interest': 'Inquiring about 50kg monthly bulk supply of Royal Assam CTC Gold & Darjeeling First Flush.',
     },
     {
-      'label': '🌿 Masala Chai Retail Box Sample',
+      'label': 'Masala Chai Sample Order',
       'name': 'Priya Deshmukh',
       'phone': '+91 99100 88765',
       'email': 'priya.deshmukh@gmail.demo',
@@ -55,7 +55,7 @@ class _LeadsAutomationViewState extends State<LeadsAutomationView> {
       'interest': 'Saw your Instagram Ad for Ayurvedic Masala Chai! How can I order the 4-blend sampler kit?',
     },
     {
-      'label': '💻 Enterprise SaaS Trial Signup',
+      'label': 'Enterprise SaaS Signup',
       'name': 'Michael Chen',
       'phone': '+1 (415) 555-0192',
       'email': 'm.chen@datadrive.demo',
@@ -143,7 +143,7 @@ class _LeadsAutomationViewState extends State<LeadsAutomationView> {
           SnackBar(
             backgroundColor: const Color(0xFF10B981),
             content: Text(
-              '🎉 Lead Captured! Auto-responded via ${result.channelsNotified.join(', ')}',
+              'Lead Captured! Auto-responded via ${result.channelsNotified.join(', ')}',
               style: GoogleFonts.inter(fontWeight: FontWeight.w600, color: Colors.white),
             ),
           ),
@@ -252,7 +252,7 @@ class _LeadsAutomationViewState extends State<LeadsAutomationView> {
                 ),
                 const Divider(height: 24, color: Color(0xFF1E293B)),
                 Text(
-                  '💬 WhatsApp (Meta Cloud API / Twilio):',
+                  'WhatsApp (Meta Cloud API / Twilio):',
                   style: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.bold, color: const Color(0xFF34D399)),
                 ),
                 const SizedBox(height: 8),
@@ -276,7 +276,7 @@ class _LeadsAutomationViewState extends State<LeadsAutomationView> {
                 ),
                 const SizedBox(height: 16),
                 Text(
-                  '✉️ Email (Gmail SMTP / Resend API):',
+                  'Email (Gmail SMTP / Resend API):',
                   style: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.bold, color: const Color(0xFF60A5FA)),
                 ),
                 const SizedBox(height: 8),
@@ -341,7 +341,7 @@ class _LeadsAutomationViewState extends State<LeadsAutomationView> {
                 if (mounted) {
                   ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(
-                      content: Text('✅ Channel credentials saved successfully!'),
+                      content: Text('Channel credentials saved successfully!'),
                       backgroundColor: Color(0xFF10B981),
                     ),
                   );
@@ -370,7 +370,7 @@ class _LeadsAutomationViewState extends State<LeadsAutomationView> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    '🎯 Inbound Leads & Auto-Responder',
+                    'Inbound Leads & Auto-Responder',
                     style: GoogleFonts.outfit(
                       fontSize: 20,
                       fontWeight: FontWeight.bold,
@@ -421,7 +421,7 @@ class _LeadsAutomationViewState extends State<LeadsAutomationView> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          '🎯 Inbound Ad Leads & Autonomous Auto-Responder',
+                          'Inbound Ad Leads & Autonomous Auto-Responder',
                           style: GoogleFonts.outfit(
                             fontSize: 22,
                             fontWeight: FontWeight.bold,
@@ -552,11 +552,11 @@ class _LeadsAutomationViewState extends State<LeadsAutomationView> {
                 dropdownColor: const Color(0xFF0F172A),
                 isExpanded: true,
                 items: const [
-                  DropdownMenuItem(value: 'instagram_ad', child: Text('📸 Instagram Sponsored Story Ad')),
-                  DropdownMenuItem(value: 'facebook_ad', child: Text('👥 Facebook Lead Form Ad')),
-                  DropdownMenuItem(value: 'google_ad', child: Text('🔍 Google Search Ad')),
-                  DropdownMenuItem(value: 'website_form', child: Text('🌐 Direct Website Contact Form')),
-                  DropdownMenuItem(value: 'whatsapp_inquiry', child: Text('💬 Inbound WhatsApp Direct Message')),
+                  DropdownMenuItem(value: 'instagram_ad', child: Text('Instagram Sponsored Story Ad')),
+                  DropdownMenuItem(value: 'facebook_ad', child: Text('Facebook Lead Form Ad')),
+                  DropdownMenuItem(value: 'google_ad', child: Text('Google Search Ad')),
+                  DropdownMenuItem(value: 'website_form', child: Text('Direct Website Contact Form')),
+                  DropdownMenuItem(value: 'whatsapp_inquiry', child: Text('Inbound WhatsApp Direct Message')),
                 ],
                 onChanged: (val) {
                   if (val != null) setState(() => _selectedSource = val);
@@ -589,7 +589,7 @@ class _LeadsAutomationViewState extends State<LeadsAutomationView> {
                     )
                   : const Icon(Icons.send_rounded, size: 18),
               label: Text(
-                _isProcessing ? 'Generating & Dispatching Auto-Response...' : '⚡ Capture Lead & Dispatch Auto-Reply',
+                _isProcessing ? 'Generating & Dispatching Auto-Response...' : 'Capture Lead & Dispatch Auto-Reply',
                 style: GoogleFonts.inter(fontWeight: FontWeight.bold),
               ),
               style: ElevatedButton.styleFrom(
@@ -689,7 +689,8 @@ class _LeadsAutomationViewState extends State<LeadsAutomationView> {
                       children: [
                         Row(
                           children: [
-                            const Text('💬 ', style: TextStyle(fontSize: 16)),
+                            const Icon(Icons.chat_rounded, size: 16, color: Color(0xFF34D399)),
+                            const SizedBox(width: 8),
                             Expanded(
                               child: Text(
                                 'WhatsApp Instant Reply (Sent to ${_phoneCtrl.text}):',
@@ -751,7 +752,8 @@ class _LeadsAutomationViewState extends State<LeadsAutomationView> {
                       children: [
                         Row(
                           children: [
-                            const Text('✉️ ', style: TextStyle(fontSize: 16)),
+                            const Icon(Icons.email_outlined, size: 16, color: Color(0xFF60A5FA)),
+                            const SizedBox(width: 8),
                             Expanded(
                               child: Text(
                                 'Email Auto-Response (Sent to ${_emailCtrl.text}):',
@@ -896,7 +898,7 @@ class _LeadsAutomationViewState extends State<LeadsAutomationView> {
         subtitle: Padding(
           padding: const EdgeInsets.only(top: 4),
           child: Text(
-            '📱 ${l.phone ?? 'No Phone'} • ✉️ ${l.email ?? 'No Email'} • 🏷️ ${l.source}',
+            'Phone: ${l.phone ?? 'None'} • Email: ${l.email ?? 'None'} • Source: ${l.source}',
             style: GoogleFonts.inter(fontSize: 11, color: const Color(0xFF94A3B8)),
           ),
         ),
@@ -964,7 +966,7 @@ class _LeadsAutomationViewState extends State<LeadsAutomationView> {
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         Text(
-                          isWhatsApp ? '💬 WhatsApp Auto-Message' : '✉️ Email Auto-Message',
+                          isWhatsApp ? 'WhatsApp Auto-Message' : 'Email Auto-Message',
                           style: GoogleFonts.inter(
                             fontSize: 11.5,
                             fontWeight: FontWeight.bold,

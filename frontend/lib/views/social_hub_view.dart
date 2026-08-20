@@ -39,22 +39,22 @@ class _SocialHubViewState extends State<SocialHubView> {
 
   final List<Map<String, String>> _postTemplates = [
     {
-      'label': '🚀 Product Launch',
+      'label': 'Product Launch',
       'content':
           'We are thrilled to announce the official rollout of our Autonomous Business Operations platform! Scale faster with zero friction. Explore today: https://apex.io',
     },
     {
-      'label': '🎁 VIP 25% Flash Sale',
+      'label': 'VIP 25% Flash Sale',
       'content':
-          '🔥 Weekend VIP Special: Get 25% OFF all enterprise plans using code WEEKEND25. 48 hours only! Claim here: https://apex.io/vip',
+          'Weekend VIP Special: Get 25% OFF all enterprise plans using code WEEKEND25. 48 hours only! Claim here: https://apex.io/vip',
     },
     {
-      'label': '💡 Thought Leadership',
+      'label': 'Thought Leadership',
       'content':
-          'Why traditional manual workflows are slowing high-growth teams down — and how autonomous AI agents unlock 10x operational velocity in 2026. A quick breakdown: 🧵👇',
+          'Why traditional manual workflows are slowing high-growth teams down — and how autonomous AI agents unlock 10x operational velocity in 2026. A quick breakdown:',
     },
     {
-      'label': '🌟 Client Case Study',
+      'label': 'Client Case Study',
       'content':
           'Spotlight: How one enterprise automated 80% of customer inquiries and boosted net margins by 14% in 30 days. Read the full story here: https://apex.io/story',
     },
@@ -157,7 +157,7 @@ class _SocialHubViewState extends State<SocialHubView> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(
-              '🎉 Broadcast dispatched to ${resultsList.length} channels!',
+              'Broadcast dispatched to ${resultsList.length} channels!',
             ),
             backgroundColor: const Color(0xFF10B981),
           ),
@@ -212,23 +212,23 @@ class _SocialHubViewState extends State<SocialHubView> {
                     items: const [
                       DropdownMenuItem(
                         value: 'whatsapp',
-                        child: Text('💬 WhatsApp Business (Meta/Twilio)'),
+                        child: Text('WhatsApp Business (Meta/Twilio)'),
                       ),
                       DropdownMenuItem(
                         value: 'instagram',
-                        child: Text('📸 Instagram Business Graph API'),
+                        child: Text('Instagram Business Graph API'),
                       ),
                       DropdownMenuItem(
                         value: 'twitter',
-                        child: Text('🐦 Twitter / X'),
+                        child: Text('Twitter / X'),
                       ),
                       DropdownMenuItem(
                         value: 'linkedin',
-                        child: Text('💼 LinkedIn Company Page'),
+                        child: Text('LinkedIn Company Page'),
                       ),
                       DropdownMenuItem(
                         value: 'facebook',
-                        child: Text('👥 Facebook Page'),
+                        child: Text('Facebook Page'),
                       ),
                     ],
                     onChanged: (val) =>

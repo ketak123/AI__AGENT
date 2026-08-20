@@ -108,7 +108,7 @@ class _OrchestratorViewState extends State<OrchestratorView> {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('🚀 Autonomous pipeline triggered for ${widget.selectedCompany!.name}!'),
+          content: Text('Autonomous pipeline triggered for ${widget.selectedCompany!.name}!'),
           backgroundColor: const Color(0xFF10B981),
         ),
       );

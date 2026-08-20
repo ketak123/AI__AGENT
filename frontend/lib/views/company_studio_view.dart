@@ -86,7 +86,7 @@ class _CompanyStudioViewState extends State<CompanyStudioView> {
         SnackBar(
           backgroundColor: const Color(0xFF10B981),
           content: Text(
-            '🌱 Seeded $preset training data into company knowledge base!',
+            'Seeded $preset training data into company knowledge base!',
             style: GoogleFonts.inter(color: Colors.white, fontWeight: FontWeight.w600),
           ),
         ),
@@ -280,7 +280,7 @@ class _CompanyStudioViewState extends State<CompanyStudioView> {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('✨ Master Business Plan Generated!'),
+          content: Text('Master Business Plan Generated!'),
           backgroundColor: Color(0xFF6366F1),
         ),
       );
@@ -366,7 +366,7 @@ class _CompanyStudioViewState extends State<CompanyStudioView> {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text('🗑️ Enterprise "${company.name}" deleted.'),
+              content: Text('Enterprise "${company.name}" deleted.'),
               backgroundColor: const Color(0xFFEF4444),
             ),
           );
@@ -713,7 +713,7 @@ class _CompanyStudioViewState extends State<CompanyStudioView> {
                             const SizedBox(width: 10),
                             Expanded(
                               child: Text(
-                                '📚 Knowledge Base Hub',
+                                'Knowledge Base Hub',
                                 style: GoogleFonts.outfit(fontSize: 17, fontWeight: FontWeight.bold, color: Colors.white),
                               ),
                             ),
@@ -755,7 +755,7 @@ class _CompanyStudioViewState extends State<CompanyStudioView> {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
-                                '📚 Company Knowledge Base & AI Training Hub',
+                                'Company Knowledge Base & AI Training Hub',
                                 style: GoogleFonts.outfit(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white),
                               ),
                               Text(
@@ -1162,7 +1162,7 @@ class _CompanyStudioViewState extends State<CompanyStudioView> {
     return ActionChip(
       backgroundColor: const Color(0xFF1E293B),
       side: const BorderSide(color: Color(0xFF334155)),
-      avatar: const Text('🌱', style: TextStyle(fontSize: 11)),
+      avatar: const Icon(Icons.add_circle_outline_rounded, size: 14, color: Color(0xFF818CF8)),
       label: Text(
         label,
         style: GoogleFonts.inter(fontSize: 11, color: const Color(0xFFE2E8F0)),

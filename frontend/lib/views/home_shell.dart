@@ -162,7 +162,7 @@ class _HomeShellState extends State<HomeShell> {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text('🗑️ Enterprise "${companyToDelete.name}" deleted.'),
+              content: Text('Enterprise "${companyToDelete.name}" deleted.'),
               backgroundColor: const Color(0xFFEF4444),
             ),
           );
@@ -240,7 +240,7 @@ class _HomeShellState extends State<HomeShell> {
                 if (mounted) {
                   messenger.showSnackBar(
                     SnackBar(
-                      content: Text('✨ Enterprise "${newComp.name}" registered!'),
+                      content: Text('Enterprise "${newComp.name}" registered!'),
                       backgroundColor: const Color(0xFF10B981),
                     ),
                   );
@@ -325,9 +325,9 @@ class _HomeShellState extends State<HomeShell> {
                   ),
                   child: Row(
                     children: [
-                      _settingsTabPill(0, '🤖 AI Brain', currentTab, () => setDialogState(() => currentTab = 0)),
-                      _settingsTabPill(1, '🏢 Workspace', currentTab, () => setDialogState(() => currentTab = 1)),
-                      _settingsTabPill(2, '🌐 Diagnostics', currentTab, () => setDialogState(() => currentTab = 2)),
+                      _settingsTabPill(0, 'AI Brain', Icons.smart_toy_outlined, currentTab, () => setDialogState(() => currentTab = 0)),
+                      _settingsTabPill(1, 'Workspace', Icons.business_outlined, currentTab, () => setDialogState(() => currentTab = 1)),
+                      _settingsTabPill(2, 'Diagnostics', Icons.health_and_safety_outlined, currentTab, () => setDialogState(() => currentTab = 2)),
                     ],
                   ),
                 ),
@@ -335,7 +335,9 @@ class _HomeShellState extends State<HomeShell> {
 
                 // Tab Content
                 ConstrainedBox(
-                  constraints: const BoxConstraints(maxHeight: 380),
+                  constraints: BoxConstraints(
+                    maxHeight: MediaQuery.of(context).size.height * 0.55,
+                  ),
                   child: SingleChildScrollView(
                     child: currentTab == 0
                         ? _buildAIBrainSettingsTab(geminiCtrl, openaiCtrl, groqCtrl)
@@ -375,7 +377,7 @@ class _HomeShellState extends State<HomeShell> {
                         nav.pop();
                         messenger.showSnackBar(
                           SnackBar(
-                            content: Text('✅ AI Brain keys updated! Active Provider: $_llmProvider'),
+                            content: Text('AI Brain configuration updated. Active Provider: $_llmProvider'),
                             backgroundColor: const Color(0xFF10B981),
                           ),
                         );
@@ -400,14 +402,14 @@ class _HomeShellState extends State<HomeShell> {
     );
   }
 
-  Widget _settingsTabPill(int index, String label, int currentTab, VoidCallback onTap) {
+  Widget _settingsTabPill(int index, String label, IconData icon, int currentTab, VoidCallback onTap) {
     final isSelected = currentTab == index;
     return Expanded(
       child: InkWell(
         onTap: onTap,
         borderRadius: BorderRadius.circular(8),
         child: Container(
-          padding: const EdgeInsets.symmetric(vertical: 8),
+          padding: const EdgeInsets.symmetric(vertical: 7, horizontal: 4),
           alignment: Alignment.center,
           decoration: BoxDecoration(
             color: isSelected ? const Color(0xFF6366F1).withValues(alpha: 0.25) : Colors.transparent,
@@ -416,13 +418,29 @@ class _HomeShellState extends State<HomeShell> {
               color: isSelected ? const Color(0xFF6366F1).withValues(alpha: 0.5) : Colors.transparent,
             ),
           ),
-          child: Text(
-            label,
-            style: GoogleFonts.inter(
-              fontSize: 12,
-              fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
-              color: isSelected ? Colors.white : const Color(0xFF94A3B8),
-            ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(
+                icon,
+                size: 14,
+                color: isSelected ? Colors.white : const Color(0xFF94A3B8),
+              ),
+              const SizedBox(width: 6),
+              Flexible(
+                child: Text(
+                  label,
+                  style: GoogleFonts.inter(
+                    fontSize: 11.5,
+                    fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
+                    color: isSelected ? Colors.white : const Color(0xFF94A3B8),
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+            ],
           ),
         ),
       ),
@@ -521,16 +539,21 @@ class _HomeShellState extends State<HomeShell> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Text(
-              'Registered Enterprises (${_companies.length})',
-              style: GoogleFonts.outfit(fontSize: 14, fontWeight: FontWeight.bold, color: Colors.white),
+            Expanded(
+              child: Text(
+                'Registered Enterprises (${_companies.length})',
+                style: GoogleFonts.outfit(fontSize: 14, fontWeight: FontWeight.bold, color: Colors.white),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
             ),
+            const SizedBox(width: 8),
             ElevatedButton.icon(
               style: ElevatedButton.styleFrom(
                 backgroundColor: const Color(0xFF6366F1),
                 padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                visualDensity: VisualDensity.compact,
               ),
               onPressed: () {
                 Navigator.pop(context);
@@ -723,6 +746,7 @@ class _HomeShellState extends State<HomeShell> {
         return Scaffold(
           // Clean borderless UI without bulky upper banner
           appBar: isWideScreen ? null : _buildMinimalMobileHeader(),
+          drawer: isWideScreen ? null : _buildGeminiMobileDrawer(),
           body: Row(
             children: [
               if (isWideScreen) _buildSidebar(),
@@ -770,36 +794,381 @@ class _HomeShellState extends State<HomeShell> {
   PreferredSizeWidget _buildMinimalMobileHeader() {
     return AppBar(
       elevation: 0,
-      backgroundColor: const Color(0xFF0F172A),
-      titleSpacing: 12,
-      title: Row(
-        children: [
-          Container(
-            padding: const EdgeInsets.all(6),
-            decoration: BoxDecoration(
-              gradient: const LinearGradient(colors: [Color(0xFF6366F1), Color(0xFF06B6D4)]),
-              borderRadius: BorderRadius.circular(8),
-            ),
-            child: const Icon(Icons.auto_awesome, color: Colors.white, size: 16),
+      backgroundColor: const Color(0xFF0B0F19),
+      leading: Builder(
+        builder: (ctx) => IconButton(
+          icon: const Icon(Icons.menu_rounded, color: Colors.white, size: 22),
+          tooltip: 'Open Menu & Workspaces',
+          onPressed: () => Scaffold.of(ctx).openDrawer(),
+        ),
+      ),
+      centerTitle: true,
+      title: InkWell(
+        onTap: _showCompanySelectorBottomSheet,
+        borderRadius: BorderRadius.circular(20),
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+          decoration: BoxDecoration(
+            color: const Color(0xFF1E293B).withValues(alpha: 0.7),
+            borderRadius: BorderRadius.circular(20),
+            border: Border.all(color: const Color(0xFF334155)),
           ),
-          const SizedBox(width: 8),
-          Expanded(
-            child: Text(
-              _selectedCompany?.name ?? AppConstants.appName,
-              style: GoogleFonts.outfit(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white),
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-            ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                'Gemini Business',
+                style: GoogleFonts.outfit(fontSize: 13.5, fontWeight: FontWeight.bold, color: Colors.white),
+              ),
+              if (_selectedCompany != null) ...[
+                const SizedBox(width: 4),
+                Flexible(
+                  child: Text(
+                    '• ${_selectedCompany!.name}',
+                    style: GoogleFonts.inter(fontSize: 11.5, color: const Color(0xFFA5B4FC)),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+              ],
+              const SizedBox(width: 4),
+              const Icon(Icons.keyboard_arrow_down_rounded, size: 16, color: Color(0xFF94A3B8)),
+            ],
           ),
-        ],
+        ),
       ),
       actions: [
-        IconButton(
-          icon: const Icon(Icons.settings_outlined, color: Color(0xFF94A3B8), size: 20),
-          tooltip: 'Settings & Workspace',
-          onPressed: _showSettingsDialog,
+        InkWell(
+          onTap: _showSettingsDialog,
+          borderRadius: BorderRadius.circular(16),
+          child: Container(
+            width: 32,
+            height: 32,
+            margin: const EdgeInsets.only(right: 14),
+            decoration: BoxDecoration(
+              gradient: const LinearGradient(colors: [Color(0xFF6366F1), Color(0xFF8B5CF6)]),
+              shape: BoxShape.circle,
+              border: Border.all(color: const Color(0xFF334155)),
+            ),
+            alignment: Alignment.center,
+            child: Text(
+              _selectedCompany?.name.isNotEmpty == true
+                  ? _selectedCompany!.name.substring(0, 1).toUpperCase()
+                  : 'K',
+              style: GoogleFonts.outfit(fontSize: 14, fontWeight: FontWeight.bold, color: Colors.white),
+            ),
+          ),
         ),
       ],
+    );
+  }
+
+  void _showCompanySelectorBottomSheet() {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: const Color(0xFF0F172A),
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (ctx) => SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.all(20),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  const Icon(Icons.business_rounded, color: Color(0xFF818CF8), size: 20),
+                  const SizedBox(width: 10),
+                  Text(
+                    'Switch Active Enterprise',
+                    style: GoogleFonts.outfit(fontSize: 17, fontWeight: FontWeight.bold, color: Colors.white),
+                  ),
+                  const Spacer(),
+                  IconButton(
+                    icon: const Icon(Icons.close_rounded, color: Color(0xFF94A3B8), size: 20),
+                    onPressed: () => Navigator.pop(ctx),
+                  ),
+                ],
+              ),
+              const Divider(color: Color(0xFF1E293B), height: 20),
+              if (_companies.isEmpty)
+                Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 20),
+                  child: Center(
+                    child: Text(
+                      'No enterprises registered yet.',
+                      style: GoogleFonts.inter(color: const Color(0xFF94A3B8)),
+                    ),
+                  ),
+                )
+              else
+                ...(_companies.map((comp) {
+                  final isSelected = comp.id == _selectedCompany?.id;
+                  return InkWell(
+                    onTap: () {
+                      setState(() => _selectedCompany = comp);
+                      Navigator.pop(ctx);
+                    },
+                    borderRadius: BorderRadius.circular(10),
+                    child: Container(
+                      margin: const EdgeInsets.only(bottom: 8),
+                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                      decoration: BoxDecoration(
+                        color: isSelected ? const Color(0xFF6366F1).withValues(alpha: 0.15) : const Color(0xFF131B2E),
+                        borderRadius: BorderRadius.circular(10),
+                        border: Border.all(
+                          color: isSelected ? const Color(0xFF6366F1) : const Color(0xFF1E293B),
+                        ),
+                      ),
+                      child: Row(
+                        children: [
+                          Icon(Icons.business_outlined, size: 18, color: isSelected ? const Color(0xFF818CF8) : const Color(0xFF94A3B8)),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  comp.name,
+                                  style: GoogleFonts.inter(
+                                    fontSize: 14,
+                                    fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
+                                    color: Colors.white,
+                                  ),
+                                ),
+                                Text(
+                                  comp.industry,
+                                  style: GoogleFonts.inter(fontSize: 11, color: const Color(0xFF94A3B8)),
+                                ),
+                              ],
+                            ),
+                          ),
+                          if (isSelected)
+                            const Icon(Icons.check_circle_rounded, size: 18, color: Color(0xFF34D399)),
+                        ],
+                      ),
+                    ),
+                  );
+                })),
+              const SizedBox(height: 10),
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton.icon(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFF6366F1),
+                    padding: const EdgeInsets.symmetric(vertical: 12),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                  ),
+                  onPressed: () {
+                    Navigator.pop(ctx);
+                    _showCreateCompanyDialog();
+                  },
+                  icon: const Icon(Icons.add, size: 18),
+                  label: const Text('Register New Enterprise'),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildGeminiMobileDrawer() {
+    return Drawer(
+      backgroundColor: const Color(0xFF0F172A),
+      child: SafeArea(
+        child: Column(
+          children: [
+            // Drawer Brand Header
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 16, 16, 14),
+              child: Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      gradient: const LinearGradient(colors: [Color(0xFF6366F1), Color(0xFF06B6D4)]),
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: const Icon(Icons.auto_awesome, color: Colors.white, size: 18),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          AppConstants.appName,
+                          style: GoogleFonts.outfit(
+                            fontSize: 15.5,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white,
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                        Text(
+                          'Powered by Google Gemini',
+                          style: GoogleFonts.inter(fontSize: 11, color: const Color(0xFF94A3B8)),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+
+            const Divider(color: Color(0xFF1E293B), height: 1),
+
+            // Enterprise Switcher Tile
+            Padding(
+              padding: const EdgeInsets.all(12),
+              child: InkWell(
+                onTap: () {
+                  Navigator.pop(context);
+                  _showCompanySelectorBottomSheet();
+                },
+                borderRadius: BorderRadius.circular(10),
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF131B2E),
+                    borderRadius: BorderRadius.circular(10),
+                    border: Border.all(color: const Color(0xFF1E293B)),
+                  ),
+                  child: Row(
+                    children: [
+                      const Icon(Icons.business_rounded, size: 18, color: Color(0xFF818CF8)),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Active Enterprise',
+                              style: GoogleFonts.inter(fontSize: 10.5, color: const Color(0xFF94A3B8)),
+                            ),
+                            Text(
+                              _selectedCompany?.name ?? 'No Enterprise Selected',
+                              style: GoogleFonts.inter(
+                                fontSize: 13,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.white,
+                              ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ],
+                        ),
+                      ),
+                      const Icon(Icons.unfold_more_rounded, size: 18, color: Color(0xFF94A3B8)),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+
+            const Divider(color: Color(0xFF1E293B), height: 1),
+
+            // Navigation Links
+            Expanded(
+              child: ListView(
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+                children: [
+                  _drawerNavItem(0, 'Command Center', Icons.chat_bubble_outline_rounded, Icons.chat_bubble_rounded),
+                  _drawerNavItem(1, 'Agent Pipeline', Icons.rocket_launch_outlined, Icons.rocket_launch_rounded),
+                  _drawerNavItem(2, 'Leads & Automations', Icons.bolt_outlined, Icons.bolt_rounded),
+                  _drawerNavItem(3, 'Company Studio', Icons.business_outlined, Icons.business_rounded),
+                  _drawerNavItem(4, 'Social & Growth', Icons.campaign_outlined, Icons.campaign_rounded),
+                ],
+              ),
+            ),
+
+            // Settings Tile at bottom of Drawer
+            Padding(
+              padding: const EdgeInsets.all(12),
+              child: InkWell(
+                onTap: () {
+                  Navigator.pop(context);
+                  _showSettingsDialog();
+                },
+                borderRadius: BorderRadius.circular(10),
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF131B2E),
+                    borderRadius: BorderRadius.circular(10),
+                    border: Border.all(color: const Color(0xFF1E293B)),
+                  ),
+                  child: Row(
+                    children: [
+                      const Icon(Icons.settings_outlined, size: 18, color: Color(0xFFA5B4FC)),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Text(
+                          'Settings & System Console',
+                          style: GoogleFonts.inter(
+                            fontSize: 13,
+                            fontWeight: FontWeight.w600,
+                            color: const Color(0xFFE2E8F0),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _drawerNavItem(int index, String label, IconData icon, IconData activeIcon) {
+    final isSelected = _selectedIndex == index;
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 6),
+      child: InkWell(
+        onTap: () {
+          setState(() => _selectedIndex = index);
+          Navigator.pop(context);
+        },
+        borderRadius: BorderRadius.circular(10),
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+          decoration: BoxDecoration(
+            color: isSelected ? const Color(0xFF6366F1).withValues(alpha: 0.18) : Colors.transparent,
+            borderRadius: BorderRadius.circular(10),
+            border: Border.all(
+              color: isSelected ? const Color(0xFF6366F1).withValues(alpha: 0.4) : Colors.transparent,
+            ),
+          ),
+          child: Row(
+            children: [
+              Icon(
+                isSelected ? activeIcon : icon,
+                color: isSelected ? const Color(0xFF818CF8) : const Color(0xFF94A3B8),
+                size: 19,
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Text(
+                  label,
+                  style: GoogleFonts.inter(
+                    fontSize: 13.5,
+                    fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
+                    color: isSelected ? Colors.white : const Color(0xFFCBD5E1),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
     );
   }
 

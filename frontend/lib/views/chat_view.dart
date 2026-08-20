@@ -45,36 +45,48 @@ class _ChatViewState extends State<ChatView> {
   String _knowledgeSearchQuery = '';
   int _sliderTabIndex = 0; // 0: Specs & KPIs, 1: Knowledge Base, 2: Business Plan
 
-  final List<Map<String, String>> _quickActions = [
+  final List<Map<String, dynamic>> _quickActions = [
     {
-      'label': '📢 WhatsApp Broadcast',
-      'prompt': 'Draft a high-conversion 48-hour VIP flash sale broadcast for our customers with 25% off coupon.',
+      'label': 'Growth & Ad Strategy',
+      'prompt': 'Draft a high-conversion 48-hour promotional campaign for our target audience with compelling value propositions.',
       'agent': 'marketing',
+      'icon': Icons.campaign_outlined,
+      'color': Color(0xFFEC4899),
     },
     {
-      'label': '🎨 AI Ad Creative Prompt',
-      'prompt': 'Generate a commercial product photography prompt for Midjourney and high-converting ad copy.',
-      'agent': 'marketing',
-    },
-    {
-      'label': '📊 Margin & Unit Economics',
-      'prompt': 'Analyze our unit economics, calculate CAC:LTV, and forecast quarterly net profit margin targets.',
+      'label': 'Unit Economics & Margin',
+      'prompt': 'Analyze our unit economics, calculate CAC:LTV, and forecast quarterly gross margin targets.',
       'agent': 'finance',
+      'icon': Icons.account_balance_outlined,
+      'color': Color(0xFF10B981),
     },
     {
-      'label': '✉️ Executive Client Email',
-      'prompt': 'Draft a formal follow-up email to an enterprise client confirming milestone delivery and demo scheduling.',
+      'label': 'Executive Communication',
+      'prompt': 'Draft a formal executive communication to a high-value enterprise customer confirming delivery milestones.',
       'agent': 'ai_manager',
+      'icon': Icons.mail_outline_rounded,
+      'color': Color(0xFF6366F1),
     },
     {
-      'label': '🛠️ 90-Day MVP Roadmap',
-      'prompt': 'Propose a prioritized 90-day product roadmap with MoSCoW feature matrix and technical milestones.',
+      'label': '90-Day Product Roadmap',
+      'prompt': 'Propose a prioritized 90-day technical roadmap with MoSCoW feature matrix and delivery milestones.',
       'agent': 'product',
+      'icon': Icons.code_rounded,
+      'color': Color(0xFF06B6D4),
     },
     {
-      'label': '🎯 Go-To-Market Strategy',
-      'prompt': 'Formulate a comprehensive Go-To-Market strategy with SWOT analysis and 30/60/90 day milestones.',
+      'label': 'Go-To-Market Execution',
+      'prompt': 'Formulate a comprehensive Go-To-Market strategy with market positioning and 30/60/90 day milestones.',
       'agent': 'strategy',
+      'icon': Icons.insights_outlined,
+      'color': Color(0xFF3B82F6),
+    },
+    {
+      'label': 'Omnichannel Social Content',
+      'prompt': 'Generate engaging omnichannel thought leadership posts tailored for LinkedIn and Twitter/X.',
+      'agent': 'social_media',
+      'icon': Icons.share_outlined,
+      'color': Color(0xFFF59E0B),
     },
   ];
 
@@ -83,20 +95,27 @@ class _ChatViewState extends State<ChatView> {
     super.initState();
     _loadLLMStatus();
     _loadCompanyKnowledge();
-    _messages.add(
-      ChatMessage(
-        sender: 'AI Manager',
-        text: '👋 Welcome to your **Autonomous Business AI Partner**.\n\n'
-            'Ask any custom question, describe a new business idea, or command automated marketing, strategy, and financials in real time.\n\n'
-            'Powered by live Google Gemini & multi-agent intelligence!',
-        suggestions: [
-          'What are 3 high-profit revenue streams for my company?',
-          'Draft high-converting Instagram & Facebook ad copy',
-          'Create a 30-day Go-To-Market action plan',
-          'Estimate unit economics and gross profit margins',
-        ],
-      ),
-    );
+    _startNewChat();
+  }
+
+  void _startNewChat() {
+    setState(() {
+      _messages.clear();
+      _messages.add(
+        ChatMessage(
+          sender: 'AI Manager',
+          text: 'Welcome to your **Autonomous Business AI Partner**.\n\n'
+              'Ask any custom question, explore growth ideas, or command automated marketing, strategy, and financials in real time.\n\n'
+              'Powered by Google Gemini and specialized agent intelligence.',
+          suggestions: [
+            'What are 3 high-profit revenue streams for my company?',
+            'Draft high-converting Instagram & Facebook ad copy',
+            'Create a 30-day Go-To-Market action plan',
+            'Estimate unit economics and gross profit margins',
+          ],
+        ),
+      );
+    });
   }
 
   @override
@@ -138,152 +157,7 @@ class _ChatViewState extends State<ChatView> {
     } catch (_) {}
   }
 
-  void _showAIBrainSettingsDialog() {
-    final geminiCtrl = TextEditingController();
-    final openaiCtrl = TextEditingController();
-    final groqCtrl = TextEditingController();
 
-    showDialog(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        backgroundColor: const Color(0xFF0F172A),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16),
-          side: const BorderSide(color: Color(0xFF1E293B)),
-        ),
-        title: Row(
-          children: [
-            const Icon(Icons.psychology_outlined, color: Color(0xFF6366F1), size: 24),
-            const SizedBox(width: 10),
-            Text(
-              'AI Brain & Model Settings',
-              style: GoogleFonts.outfit(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 18),
-            ),
-          ],
-        ),
-        content: SizedBox(
-          width: 480,
-          child: SingleChildScrollView(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Container(
-                  padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(
-                    color: _isLiveAI ? const Color(0xFF10B981).withValues(alpha: 0.15) : const Color(0xFFF59E0B).withValues(alpha: 0.15),
-                    borderRadius: BorderRadius.circular(8),
-                    border: Border.all(
-                      color: _isLiveAI ? const Color(0xFF10B981).withValues(alpha: 0.4) : const Color(0xFFF59E0B).withValues(alpha: 0.4),
-                    ),
-                  ),
-                  child: Row(
-                    children: [
-                      Icon(
-                        _isLiveAI ? Icons.check_circle_rounded : Icons.info_outline_rounded,
-                        color: _isLiveAI ? const Color(0xFF34D399) : const Color(0xFFFBBF24),
-                        size: 18,
-                      ),
-                      const SizedBox(width: 8),
-                      Expanded(
-                        child: Text(
-                          _isLiveAI ? 'Live Real-Time AI: $_llmProvider' : 'Offline / Simulation Mode',
-                          style: GoogleFonts.inter(
-                            fontSize: 12.5,
-                            fontWeight: FontWeight.bold,
-                            color: _isLiveAI ? const Color(0xFF34D399) : const Color(0xFFFBBF24),
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                const SizedBox(height: 16),
-                Text(
-                  'Google Gemini API Key (Recommended - Free Tier):',
-                  style: GoogleFonts.inter(fontSize: 12.5, fontWeight: FontWeight.bold, color: const Color(0xFF818CF8)),
-                ),
-                const SizedBox(height: 6),
-                TextField(
-                  controller: geminiCtrl,
-                  obscureText: true,
-                  style: const TextStyle(color: Colors.white),
-                  decoration: const InputDecoration(
-                    hintText: 'AIzaSy... (Get free key at aistudio.google.com)',
-                  ),
-                ),
-                const SizedBox(height: 14),
-                Text(
-                  'OpenAI API Key (GPT-4o / GPT-4o-mini):',
-                  style: GoogleFonts.inter(fontSize: 12.5, fontWeight: FontWeight.bold, color: const Color(0xFF60A5FA)),
-                ),
-                const SizedBox(height: 6),
-                TextField(
-                  controller: openaiCtrl,
-                  obscureText: true,
-                  style: const TextStyle(color: Colors.white),
-                  decoration: const InputDecoration(
-                    hintText: 'sk-proj-...',
-                  ),
-                ),
-                const SizedBox(height: 14),
-                Text(
-                  'Groq Cloud API Key (Ultra-Fast Free Llama 3.3):',
-                  style: GoogleFonts.inter(fontSize: 12.5, fontWeight: FontWeight.bold, color: const Color(0xFF34D399)),
-                ),
-                const SizedBox(height: 6),
-                TextField(
-                  controller: groqCtrl,
-                  obscureText: true,
-                  style: const TextStyle(color: Colors.white),
-                  decoration: const InputDecoration(
-                    hintText: 'gsk_...',
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx),
-            child: const Text('Cancel', style: TextStyle(color: Color(0xFF94A3B8))),
-          ),
-          ElevatedButton(
-            onPressed: () async {
-              Navigator.pop(ctx);
-              final payload = <String, dynamic>{};
-              if (geminiCtrl.text.trim().isNotEmpty) payload['gemini_api_key'] = geminiCtrl.text.trim();
-              if (openaiCtrl.text.trim().isNotEmpty) payload['openai_api_key'] = openaiCtrl.text.trim();
-              if (groqCtrl.text.trim().isNotEmpty) payload['groq_api_key'] = groqCtrl.text.trim();
-
-              if (payload.isNotEmpty) {
-                try {
-                  await widget.apiService.updateLLMConfig(payload);
-                  await _loadLLMStatus();
-                  if (mounted) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: Text('✅ AI Brain keys updated! Active: $_llmProvider'),
-                        backgroundColor: const Color(0xFF10B981),
-                      ),
-                    );
-                  }
-                } catch (e) {
-                  if (mounted) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text('Failed to update AI keys: $e'), backgroundColor: Colors.red),
-                    );
-                  }
-                }
-              }
-            },
-            child: const Text('Save AI Keys'),
-          ),
-        ],
-      ),
-    );
-  }
 
   @override
   void dispose() {
@@ -342,7 +216,7 @@ class _ChatViewState extends State<ChatView> {
         _messages.add(
           ChatMessage(
             sender: 'System Alert',
-            text: '⚠️ **Connection or Execution Issue**\n\n'
+            text: '**Connection or Execution Issue**\n\n'
                 'Unable to reach backend on port 8001: `$e`\n\n'
                 '*Ensure backend is running: `uvicorn backend.app_main:app --port 8001`*',
             agentType: 'system',
@@ -590,19 +464,13 @@ class _ChatViewState extends State<ChatView> {
 
               const SizedBox(width: 6),
 
-              // Settings & AI Brain Console Button
+              // New Chat Action Button (Gemini Style)
               IconButton(
-                icon: const Icon(Icons.settings_outlined, size: 18, color: Color(0xFF94A3B8)),
-                tooltip: 'Settings & AI Keys',
+                icon: const Icon(Icons.edit_note_rounded, size: 20, color: Colors.white),
+                tooltip: 'Start Fresh Conversation',
                 padding: EdgeInsets.zero,
                 constraints: const BoxConstraints(minWidth: 30, minHeight: 30),
-                onPressed: () {
-                  if (widget.onOpenSettings != null) {
-                    widget.onOpenSettings!();
-                  } else {
-                    _showAIBrainSettingsDialog();
-                  }
-                },
+                onPressed: _startNewChat,
               ),
             ],
           ),
@@ -612,15 +480,15 @@ class _ChatViewState extends State<ChatView> {
         Expanded(
           child: ListView.builder(
             controller: _scrollController,
-            padding: const EdgeInsets.all(16),
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
             itemCount: _messages.length + (_messages.length <= 1 ? 1 : 0),
             itemBuilder: (context, index) {
               if (index < _messages.length) {
                 final msg = _messages[index];
                 return _buildMessageBubble(msg);
               }
-              // Show Gemini Suggested Prompts Grid on fresh chat
-              return _buildSuggestedPromptsGrid();
+              // Show Gemini Hero State & Suggested Prompts Grid on fresh chat
+              return _buildGeminiHeroEmptyState();
             },
           ),
         ),
@@ -639,12 +507,12 @@ class _ChatViewState extends State<ChatView> {
                 ),
                 const SizedBox(width: 8),
               ] else ...[
-                const Icon(Icons.circle, size: 9, color: Color(0xFF10B981)),
+                const Icon(Icons.circle, size: 8, color: Color(0xFF10B981)),
                 const SizedBox(width: 8),
               ],
               Expanded(
                 child: Text(
-                  'Active Agent: ${currentAgentMeta['name']} • $_statusText',
+                  'Active Agent: ${currentAgentMeta['name']} • ${_isLiveAI ? _llmProvider : 'Simulation'} • $_statusText',
                   style: GoogleFonts.inter(
                     fontSize: 11.5,
                     color: const Color(0xFF94A3B8),
@@ -669,8 +537,10 @@ class _ChatViewState extends State<ChatView> {
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
+                        const Icon(Icons.business_outlined, size: 14, color: Color(0xFFA5B4FC)),
+                        const SizedBox(width: 4),
                         Text(
-                          '🏢 ${widget.selectedCompany!.name}',
+                          widget.selectedCompany!.name,
                           style: GoogleFonts.inter(
                             fontSize: 11.5,
                             color: const Color(0xFFA5B4FC),
@@ -752,31 +622,80 @@ class _ChatViewState extends State<ChatView> {
     );
   }
 
-  Widget _buildSuggestedPromptsGrid() {
+  Widget _buildGeminiHeroEmptyState() {
+    final companyName = widget.selectedCompany?.name ?? 'Ketak';
+
     return LayoutBuilder(
       builder: (context, constraints) {
-        final crossAxisCount = constraints.maxWidth > 580 ? 2 : 1;
+        final availableWidth = constraints.maxWidth;
+        final crossAxisCount = availableWidth > 580 ? 2 : 1;
+
         return Container(
-          margin: const EdgeInsets.only(top: 20, bottom: 16),
-          padding: const EdgeInsets.symmetric(horizontal: 4),
+          margin: const EdgeInsets.only(top: 24, bottom: 20),
+          padding: const EdgeInsets.symmetric(horizontal: 6),
           child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Row(
-                children: [
-                  const Icon(Icons.auto_awesome, size: 16, color: Color(0xFF818CF8)),
-                  const SizedBox(width: 8),
-                  Text(
-                    'Suggested AI Business Prompts',
-                    style: GoogleFonts.outfit(
-                      fontSize: 13,
-                      fontWeight: FontWeight.bold,
-                      color: const Color(0xFFCBD5E1),
+              // Multicolor Gemini Glowing 4-Pointed Star
+              Container(
+                width: 54,
+                height: 54,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  gradient: RadialGradient(
+                    colors: [
+                      const Color(0xFF6366F1).withValues(alpha: 0.35),
+                      Colors.transparent,
+                    ],
+                  ),
+                ),
+                child: Center(
+                  child: ShaderMask(
+                    shaderCallback: (bounds) => const LinearGradient(
+                      colors: [
+                        Color(0xFF4285F4),
+                        Color(0xFF9B72CB),
+                        Color(0xFFD96570),
+                        Color(0xFFF4B400),
+                      ],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                    ).createShader(bounds),
+                    child: const Icon(
+                      Icons.auto_awesome,
+                      size: 38,
+                      color: Colors.white,
                     ),
                   ),
-                ],
+                ),
               ),
-              const SizedBox(height: 12),
+              const SizedBox(height: 16),
+
+              // Gemini Style Large Greeting with Auto Text Fitting
+              FittedBox(
+                fit: BoxFit.scaleDown,
+                child: Text(
+                  'What can I help with, $companyName?',
+                  style: GoogleFonts.outfit(
+                    fontSize: 26,
+                    fontWeight: FontWeight.w400,
+                    color: Colors.white,
+                    letterSpacing: -0.5,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                'Select an action starter or ask anything below',
+                style: GoogleFonts.inter(
+                  fontSize: 12.5,
+                  color: const Color(0xFF94A3B8),
+                ),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 24),
+
+              // Suggested AI Business Prompts Grid
               GridView.builder(
                 shrinkWrap: true,
                 physics: const NeverScrollableScrollPhysics(),
@@ -784,16 +703,19 @@ class _ChatViewState extends State<ChatView> {
                   crossAxisCount: crossAxisCount,
                   crossAxisSpacing: 10,
                   mainAxisSpacing: 10,
-                  mainAxisExtent: 88,
+                  mainAxisExtent: 82,
                 ),
                 itemCount: _quickActions.length,
                 itemBuilder: (context, idx) {
                   final action = _quickActions[idx];
+                  final actionIcon = action['icon'] as IconData;
+                  final actionColor = action['color'] as Color;
+
                   return InkWell(
-                    onTap: () => _sendMessage(action['prompt']!, action['agent']),
+                    onTap: () => _sendMessage(action['prompt'] as String, action['agent'] as String),
                     borderRadius: BorderRadius.circular(12),
                     child: Container(
-                      padding: const EdgeInsets.all(12),
+                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
                       decoration: BoxDecoration(
                         color: const Color(0xFF131B2E),
                         borderRadius: BorderRadius.circular(12),
@@ -804,10 +726,10 @@ class _ChatViewState extends State<ChatView> {
                           Container(
                             padding: const EdgeInsets.all(8),
                             decoration: BoxDecoration(
-                              color: const Color(0xFF6366F1).withValues(alpha: 0.15),
+                              color: actionColor.withValues(alpha: 0.15),
                               borderRadius: BorderRadius.circular(8),
                             ),
-                            child: const Icon(Icons.bolt_rounded, size: 16, color: Color(0xFF818CF8)),
+                            child: Icon(actionIcon, size: 18, color: actionColor),
                           ),
                           const SizedBox(width: 10),
                           Expanded(
@@ -815,19 +737,22 @@ class _ChatViewState extends State<ChatView> {
                               crossAxisAlignment: CrossAxisAlignment.start,
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
-                                Text(
-                                  action['label']!,
-                                  style: GoogleFonts.inter(
-                                    fontSize: 12.5,
-                                    fontWeight: FontWeight.w600,
-                                    color: Colors.white,
+                                FittedBox(
+                                  fit: BoxFit.scaleDown,
+                                  alignment: Alignment.centerLeft,
+                                  child: Text(
+                                    action['label'] as String,
+                                    style: GoogleFonts.inter(
+                                      fontSize: 12.5,
+                                      fontWeight: FontWeight.w600,
+                                      color: Colors.white,
+                                    ),
+                                    maxLines: 1,
                                   ),
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis,
                                 ),
                                 const SizedBox(height: 2),
                                 Text(
-                                  action['prompt']!,
+                                  action['prompt'] as String,
                                   style: GoogleFonts.inter(
                                     fontSize: 11,
                                     color: const Color(0xFF94A3B8),
@@ -1064,24 +989,24 @@ class _ChatViewState extends State<ChatView> {
         const SizedBox(height: 18),
 
         Text(
-          '⚡ 1-Click Tailored Company Prompts',
+          'Tailored Company Actions',
           style: GoogleFonts.outfit(fontSize: 13, fontWeight: FontWeight.bold, color: Colors.white),
         ),
         const SizedBox(height: 8),
         _tailoredPromptChip(
-          '📢 Create ad campaign for ${comp.name}',
+          'Create ad campaign for ${comp.name}',
           'Draft a high-converting multi-channel marketing campaign specifically designed for ${comp.name} targeting ${comp.targetAudience}.',
           'marketing',
         ),
         const SizedBox(height: 6),
         _tailoredPromptChip(
-          '💰 Margin forecast for ${comp.budget}',
+          'Margin forecast for ${comp.budget}',
           'Analyze our unit economics and calculate expected gross and net margins assuming our operating budget is ${comp.budget}.',
           'finance',
         ),
         const SizedBox(height: 6),
         _tailoredPromptChip(
-          '🎯 30-Day Growth Strategy',
+          '30-Day Growth Strategy',
           'Formulate an actionable 30-day growth strategy for ${comp.name} in the ${comp.industry} sector with concrete KPIs.',
           'strategy',
         ),
@@ -1447,13 +1372,22 @@ class _ChatViewState extends State<ChatView> {
                               borderRadius: BorderRadius.circular(12),
                               border: Border.all(color: const Color(0xFF334155)),
                             ),
-                            child: Text(
-                              '💡 $s',
-                              style: GoogleFonts.inter(
-                                fontSize: 11.5,
-                                color: const Color(0xFFA5B4FC),
-                                fontWeight: FontWeight.w500,
-                              ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                const Icon(Icons.arrow_outward_rounded, size: 12, color: Color(0xFF818CF8)),
+                                const SizedBox(width: 6),
+                                Flexible(
+                                  child: Text(
+                                    s,
+                                    style: GoogleFonts.inter(
+                                      fontSize: 11.5,
+                                      color: const Color(0xFFA5B4FC),
+                                      fontWeight: FontWeight.w500,
+                                    ),
+                                  ),
+                                ),
+                              ],
                             ),
                           ),
                         );

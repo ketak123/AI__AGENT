@@ -268,7 +268,7 @@ class ApiService {
   }
 
   // =========================================================================
-  // 📚 COMPANY KNOWLEDGE BASE & TRAINING DATA
+  // COMPANY KNOWLEDGE BASE & TRAINING DATA
   // =========================================================================
 
   Future<List<KnowledgeItem>> getCompanyKnowledge(int companyId) async {
@@ -326,7 +326,7 @@ class ApiService {
   }
 
   // =========================================================================
-  // 🎯 INBOUND LEADS & AUTONOMOUS AUTO-RESPONDER
+  // INBOUND LEADS & AUTONOMOUS AUTO-RESPONDER
   // =========================================================================
 
   Future<List<InboundLead>> getCompanyLeads(int companyId) async {
@@ -371,7 +371,7 @@ class ApiService {
   }
 
   // =========================================================================
-  // ⚙️ CHANNEL INTEGRATION SETTINGS
+  // CHANNEL INTEGRATION SETTINGS
   // =========================================================================
 
   Future<List<Map<String, dynamic>>> getIntegrations(int companyId) async {
@@ -407,7 +407,7 @@ class ApiService {
   }
 
   // =========================================================================
-  // 💬 DIRECT OUTBOX DISPATCH (WHATSAPP & EMAIL)
+  // DIRECT OUTBOX DISPATCH (WHATSAPP & EMAIL)
   // =========================================================================
 
   Future<Map<String, dynamic>> sendDirectWhatsApp({
@@ -457,7 +457,7 @@ class ApiService {
   }
 
   // =========================================================================
-  // 🧠 LLM BRAIN & MODEL CONFIGURATION
+  // LLM BRAIN & MODEL CONFIGURATION
   // =========================================================================
 
   Future<Map<String, dynamic>> getLLMStatus() async {
