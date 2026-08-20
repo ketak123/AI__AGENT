@@ -397,17 +397,19 @@ class _OrchestratorViewState extends State<OrchestratorView> {
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
                                 Container(
-                                  padding: const EdgeInsets.all(8),
+                                  padding: const EdgeInsets.all(7),
                                   decoration: BoxDecoration(
                                     color: color.withValues(alpha: 0.15),
                                     borderRadius: BorderRadius.circular(8),
                                   ),
-                                  child: Icon(role['icon'] as IconData, color: color, size: 18),
+                                  child: Icon(role['icon'] as IconData, color: color, size: 17),
                                 ),
-                                if (latestTask != null)
-                                  StatusChip(status: latestTask.status, compact: true)
-                                else
-                                  const StatusChip(status: 'pending', compact: true),
+                                const SizedBox(width: 6),
+                                Flexible(
+                                  child: latestTask != null
+                                      ? StatusChip(status: latestTask.status, compact: true)
+                                      : const StatusChip(status: 'pending', compact: true),
+                                ),
                               ],
                             ),
                             const SizedBox(height: 10),

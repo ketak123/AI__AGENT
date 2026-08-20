@@ -46,51 +46,6 @@ class _ChatViewState extends State<ChatView> {
   String _knowledgeSearchQuery = '';
   int _sliderTabIndex = 0; // 0: Specs & KPIs, 1: Knowledge Base, 2: Business Plan
 
-  final List<Map<String, dynamic>> _quickActions = [
-    {
-      'label': 'Growth & Ad Strategy',
-      'prompt': 'Draft a high-conversion 48-hour promotional campaign for our target audience with compelling value propositions.',
-      'agent': 'marketing',
-      'icon': Icons.campaign_outlined,
-      'color': Color(0xFFEC4899),
-    },
-    {
-      'label': 'Unit Economics & Margin',
-      'prompt': 'Analyze our unit economics, calculate CAC:LTV, and forecast quarterly gross margin targets.',
-      'agent': 'finance',
-      'icon': Icons.account_balance_outlined,
-      'color': Color(0xFF10B981),
-    },
-    {
-      'label': 'Executive Communication',
-      'prompt': 'Draft a formal executive communication to a high-value enterprise customer confirming delivery milestones.',
-      'agent': 'ai_manager',
-      'icon': Icons.mail_outline_rounded,
-      'color': Color(0xFF6366F1),
-    },
-    {
-      'label': '90-Day Product Roadmap',
-      'prompt': 'Propose a prioritized 90-day technical roadmap with MoSCoW feature matrix and delivery milestones.',
-      'agent': 'product',
-      'icon': Icons.code_rounded,
-      'color': Color(0xFF06B6D4),
-    },
-    {
-      'label': 'Go-To-Market Execution',
-      'prompt': 'Formulate a comprehensive Go-To-Market strategy with market positioning and 30/60/90 day milestones.',
-      'agent': 'strategy',
-      'icon': Icons.insights_outlined,
-      'color': Color(0xFF3B82F6),
-    },
-    {
-      'label': 'Omnichannel Social Content',
-      'prompt': 'Generate engaging omnichannel thought leadership posts tailored for LinkedIn and Twitter/X.',
-      'agent': 'social_media',
-      'icon': Icons.share_outlined,
-      'color': Color(0xFFF59E0B),
-    },
-  ];
-
   @override
   void initState() {
     super.initState();
@@ -102,20 +57,8 @@ class _ChatViewState extends State<ChatView> {
   void _startNewChat() {
     setState(() {
       _messages.clear();
-      _messages.add(
-        ChatMessage(
-          sender: 'AI Manager',
-          text: 'Welcome to your **Autonomous Business AI Partner**.\n\n'
-              'Ask any custom question, explore growth ideas, or command automated marketing, strategy, and financials in real time.\n\n'
-              'Powered by Google Gemini and specialized agent intelligence.',
-          suggestions: [
-            'What are 3 high-profit revenue streams for my company?',
-            'Draft high-converting Instagram & Facebook ad copy',
-            'Create a 30-day Go-To-Market action plan',
-            'Estimate unit economics and gross profit margins',
-          ],
-        ),
-      );
+      _statusText = 'Ready';
+      _isLoading = false;
     });
   }
 
@@ -523,19 +466,17 @@ class _ChatViewState extends State<ChatView> {
 
         // Chat Messages & Gemini-style Empty State
         Expanded(
-          child: ListView.builder(
-            controller: _scrollController,
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-            itemCount: _messages.length + (_messages.length <= 1 ? 1 : 0),
-            itemBuilder: (context, index) {
-              if (index < _messages.length) {
-                final msg = _messages[index];
-                return _buildMessageBubble(msg);
-              }
-              // Show Gemini Hero State & Suggested Prompts Grid on fresh chat
-              return _buildGeminiHeroEmptyState();
-            },
-          ),
+          child: _messages.isEmpty
+              ? _buildGeminiHeroEmptyState()
+              : ListView.builder(
+                  controller: _scrollController,
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                  itemCount: _messages.length,
+                  itemBuilder: (context, index) {
+                    final msg = _messages[index];
+                    return _buildMessageBubble(msg);
+                  },
+                ),
         ),
 
         // Status bar
@@ -668,156 +609,66 @@ class _ChatViewState extends State<ChatView> {
   }
 
   Widget _buildGeminiHeroEmptyState() {
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        final availableWidth = constraints.maxWidth;
-        final crossAxisCount = availableWidth > 580 ? 2 : 1;
-
-        return Container(
-          margin: const EdgeInsets.only(top: 24, bottom: 20),
-          padding: const EdgeInsets.symmetric(horizontal: 6),
-          child: Column(
-            children: [
-              // Multicolor Gemini Glowing 4-Pointed Star
-              Container(
-                width: 54,
-                height: 54,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  gradient: RadialGradient(
+    return Center(
+      child: SingleChildScrollView(
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            // Multicolor Gemini Glowing 4-Pointed Star
+            Container(
+              width: 58,
+              height: 58,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                gradient: RadialGradient(
+                  colors: [
+                    const Color(0xFF6366F1).withValues(alpha: 0.35),
+                    Colors.transparent,
+                  ],
+                ),
+              ),
+              child: Center(
+                child: ShaderMask(
+                  shaderCallback: (bounds) => const LinearGradient(
                     colors: [
-                      const Color(0xFF6366F1).withValues(alpha: 0.35),
-                      Colors.transparent,
+                      Color(0xFF4285F4),
+                      Color(0xFF9B72CB),
+                      Color(0xFFD96570),
+                      Color(0xFFF4B400),
                     ],
-                  ),
-                ),
-                child: Center(
-                  child: ShaderMask(
-                    shaderCallback: (bounds) => const LinearGradient(
-                      colors: [
-                        Color(0xFF4285F4),
-                        Color(0xFF9B72CB),
-                        Color(0xFFD96570),
-                        Color(0xFFF4B400),
-                      ],
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                    ).createShader(bounds),
-                    child: const Icon(
-                      Icons.auto_awesome,
-                      size: 38,
-                      color: Colors.white,
-                    ),
-                  ),
-                ),
-              ),
-              const SizedBox(height: 16),
-
-              // Gemini Style Large Greeting with Auto Text Fitting
-              FittedBox(
-                fit: BoxFit.scaleDown,
-                child: Text(
-                  'What can I help with?',
-                  style: GoogleFonts.outfit(
-                    fontSize: 28,
-                    fontWeight: FontWeight.w400,
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  ).createShader(bounds),
+                  child: const Icon(
+                    Icons.auto_awesome,
+                    size: 40,
                     color: Colors.white,
-                    letterSpacing: -0.5,
                   ),
-                  textAlign: TextAlign.center,
                 ),
               ),
-              const SizedBox(height: 8),
-              Text(
-                'Select an action starter or ask anything below',
-                style: GoogleFonts.inter(
-                  fontSize: 12.5,
-                  color: const Color(0xFF94A3B8),
+            ),
+            const SizedBox(height: 20),
+
+            // Gemini Style Clean Greeting
+            FittedBox(
+              fit: BoxFit.scaleDown,
+              child: Text(
+                'What can I help with?',
+                style: GoogleFonts.outfit(
+                  fontSize: 30,
+                  fontWeight: FontWeight.w400,
+                  color: Colors.white,
+                  letterSpacing: -0.5,
                 ),
                 textAlign: TextAlign.center,
               ),
-              const SizedBox(height: 24),
-
-              // Suggested AI Business Prompts Grid
-              GridView.builder(
-                shrinkWrap: true,
-                physics: const NeverScrollableScrollPhysics(),
-                gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: crossAxisCount,
-                  crossAxisSpacing: 10,
-                  mainAxisSpacing: 10,
-                  mainAxisExtent: 82,
-                ),
-                itemCount: _quickActions.length,
-                itemBuilder: (context, idx) {
-                  final action = _quickActions[idx];
-                  final actionIcon = action['icon'] as IconData;
-                  final actionColor = action['color'] as Color;
-
-                  return InkWell(
-                    onTap: () => _sendMessage(action['prompt'] as String, action['agent'] as String),
-                    borderRadius: BorderRadius.circular(12),
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFF131B2E),
-                        borderRadius: BorderRadius.circular(12),
-                        border: Border.all(color: const Color(0xFF1E293B)),
-                      ),
-                      child: Row(
-                        children: [
-                          Container(
-                            padding: const EdgeInsets.all(8),
-                            decoration: BoxDecoration(
-                              color: actionColor.withValues(alpha: 0.15),
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                            child: Icon(actionIcon, size: 18, color: actionColor),
-                          ),
-                          const SizedBox(width: 10),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                FittedBox(
-                                  fit: BoxFit.scaleDown,
-                                  alignment: Alignment.centerLeft,
-                                  child: Text(
-                                    action['label'] as String,
-                                    style: GoogleFonts.inter(
-                                      fontSize: 12.5,
-                                      fontWeight: FontWeight.w600,
-                                      color: Colors.white,
-                                    ),
-                                    maxLines: 1,
-                                  ),
-                                ),
-                                const SizedBox(height: 2),
-                                Text(
-                                  action['prompt'] as String,
-                                  style: GoogleFonts.inter(
-                                    fontSize: 11,
-                                    color: const Color(0xFF94A3B8),
-                                  ),
-                                  maxLines: 2,
-                                  overflow: TextOverflow.ellipsis,
-                                ),
-                              ],
-                            ),
-                          ),
-                          const SizedBox(width: 4),
-                          const Icon(Icons.arrow_forward_ios_rounded, size: 12, color: Color(0xFF64748B)),
-                        ],
-                      ),
-                    ),
-                  );
-                },
-              ),
-            ],
-          ),
-        );
-      },
+            ),
+          ],
+        ),
+      ),
     );
   }
 

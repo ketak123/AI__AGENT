@@ -70,15 +70,19 @@ class StatusChip extends StatelessWidget {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(icon, size: compact ? 12 : 14, color: fg),
-          const SizedBox(width: 5),
-          Text(
-            label,
-            style: GoogleFonts.inter(
-              fontSize: compact ? 10.5 : 11.5,
-              fontWeight: FontWeight.w600,
-              color: fg,
-              letterSpacing: 0.4,
+          Icon(icon, size: compact ? 11 : 14, color: fg),
+          const SizedBox(width: 4),
+          Flexible(
+            child: Text(
+              label,
+              style: GoogleFonts.inter(
+                fontSize: compact ? 10 : 11.5,
+                fontWeight: FontWeight.w600,
+                color: fg,
+                letterSpacing: 0.3,
+              ),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
             ),
           ),
         ],
