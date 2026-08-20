@@ -27,13 +27,13 @@ class AgentTask {
 
   factory AgentTask.fromJson(Map<String, dynamic> json) {
     return AgentTask(
-      id: json['id'] as int,
-      companyId: json['company_id'] as int? ?? 0,
-      agentType: json['agent_type'] as String? ?? 'general',
-      title: json['title'] as String? ?? '',
-      status: json['status'] as String? ?? 'pending',
-      result: json['result'] as String?,
-      error: json['error'] as String?,
+      id: int.tryParse(json['id']?.toString() ?? '') ?? 0,
+      companyId: int.tryParse(json['company_id']?.toString() ?? '') ?? 0,
+      agentType: json['agent_type']?.toString() ?? 'general',
+      title: json['title']?.toString() ?? '',
+      status: json['status']?.toString() ?? 'pending',
+      result: json['result']?.toString(),
+      error: json['error']?.toString(),
       createdAt: json['created_at'] != null
           ? DateTime.tryParse(json['created_at'].toString())
           : null,

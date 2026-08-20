@@ -25,9 +25,9 @@ class Company {
 
   factory Company.fromJson(Map<String, dynamic> json) {
     return Company(
-      id: json['id'] as int,
-      name: json['name'] as String? ?? 'Unnamed Enterprise',
-      status: json['status'] as String? ?? 'created',
+      id: int.tryParse(json['id']?.toString() ?? '') ?? 0,
+      name: json['name']?.toString() ?? 'Unnamed Enterprise',
+      status: json['status']?.toString() ?? 'created',
       data: json['data'] is Map<String, dynamic>
           ? json['data'] as Map<String, dynamic>
           : {},

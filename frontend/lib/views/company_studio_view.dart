@@ -470,37 +470,67 @@ class _CompanyStudioViewState extends State<CompanyStudioView> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // Top Bar: Enterprise Selector & Creator
-            Row(
-              children: [
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'Company Strategy & Profile Studio',
-                        style: GoogleFonts.outfit(fontSize: 22, fontWeight: FontWeight.bold, color: Colors.white),
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        'Configure core business parameters, target audience, and generate executive AI strategy documents.',
-                        style: GoogleFonts.inter(fontSize: 13.5, color: const Color(0xFF94A3B8)),
-                      ),
-                    ],
-                  ),
-                ),
-                ElevatedButton.icon(
-                  onPressed: _showCreateCompanyDialog,
-                  icon: const Icon(Icons.add, size: 18),
-                  label: const Text('New Enterprise'),
-                ),
-              ],
+            LayoutBuilder(
+              builder: (context, constraints) {
+                final isNarrow = constraints.maxWidth < 600;
+                return isNarrow
+                    ? Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Company Strategy & Profile Studio',
+                            style: GoogleFonts.outfit(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.white),
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            'Configure core business parameters, target audience, and generate executive AI strategy documents.',
+                            style: GoogleFonts.inter(fontSize: 13, color: const Color(0xFF94A3B8)),
+                          ),
+                          const SizedBox(height: 12),
+                          SizedBox(
+                            width: double.infinity,
+                            child: ElevatedButton.icon(
+                              onPressed: _showCreateCompanyDialog,
+                              icon: const Icon(Icons.add, size: 18),
+                              label: const Text('New Enterprise'),
+                            ),
+                          ),
+                        ],
+                      )
+                    : Row(
+                        children: [
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  'Company Strategy & Profile Studio',
+                                  style: GoogleFonts.outfit(fontSize: 22, fontWeight: FontWeight.bold, color: Colors.white),
+                                ),
+                                const SizedBox(height: 4),
+                                Text(
+                                  'Configure core business parameters, target audience, and generate executive AI strategy documents.',
+                                  style: GoogleFonts.inter(fontSize: 13.5, color: const Color(0xFF94A3B8)),
+                                ),
+                              ],
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          ElevatedButton.icon(
+                            onPressed: _showCreateCompanyDialog,
+                            icon: const Icon(Icons.add, size: 18),
+                            label: const Text('New Enterprise'),
+                          ),
+                        ],
+                      );
+              },
             ),
 
             const SizedBox(height: 20),
 
             // Enterprise Selector Cards Carousel
             SizedBox(
-              height: 90,
+              height: 98,
               child: widget.companies.isEmpty
                   ? Center(
                       child: Text(
@@ -521,7 +551,7 @@ class _CompanyStudioViewState extends State<CompanyStudioView> {
                             borderRadius: BorderRadius.circular(14),
                             child: Container(
                               width: 240,
-                              padding: const EdgeInsets.all(12),
+                              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
                               decoration: BoxDecoration(
                                 color: isSelected
                                     ? const Color(0xFF6366F1).withValues(alpha: 0.2)
@@ -552,21 +582,21 @@ class _CompanyStudioViewState extends State<CompanyStudioView> {
                                           overflow: TextOverflow.ellipsis,
                                         ),
                                       ),
-                                      StatusChip(status: comp.status, compact: true),
                                       const SizedBox(width: 4),
+                                      StatusChip(status: comp.status, compact: true),
                                       IconButton(
                                         icon: const Icon(Icons.delete_outline_rounded, size: 16, color: Color(0xFFF87171)),
                                         tooltip: 'Delete "${comp.name}"',
                                         padding: EdgeInsets.zero,
-                                        constraints: const BoxConstraints(minWidth: 24, minHeight: 24),
+                                        constraints: const BoxConstraints(minWidth: 22, minHeight: 22),
                                         onPressed: () => _confirmDeleteCompany(comp),
                                       ),
                                     ],
                                   ),
-                                  const SizedBox(height: 4),
+                                  const SizedBox(height: 2),
                                   Text(
                                     comp.industry,
-                                    style: GoogleFonts.inter(fontSize: 11.5, color: const Color(0xFF94A3B8)),
+                                    style: GoogleFonts.inter(fontSize: 11, color: const Color(0xFF94A3B8)),
                                     maxLines: 1,
                                     overflow: TextOverflow.ellipsis,
                                   ),
@@ -590,7 +620,7 @@ class _CompanyStudioViewState extends State<CompanyStudioView> {
                     children: [
                       Expanded(
                         child: MetricTile(
-                          label: 'Enterprise Status',
+                          label: 'Status',
                           value: c.status.replaceAll('_', ' ').toUpperCase(),
                           icon: Icons.shield_outlined,
                           color: const Color(0xFF6366F1),
@@ -599,7 +629,7 @@ class _CompanyStudioViewState extends State<CompanyStudioView> {
                       const SizedBox(width: 12),
                       Expanded(
                         child: MetricTile(
-                          label: 'Operating Budget',
+                          label: 'Budget',
                           value: c.budget,
                           icon: Icons.payments_outlined,
                           color: const Color(0xFF10B981),
@@ -609,7 +639,7 @@ class _CompanyStudioViewState extends State<CompanyStudioView> {
                         const SizedBox(width: 12),
                         Expanded(
                           child: MetricTile(
-                            label: 'Business Model',
+                            label: 'Model',
                             value: c.businessModel,
                             icon: Icons.layers_outlined,
                             color: const Color(0xFF06B6D4),
@@ -663,99 +693,130 @@ class _CompanyStudioViewState extends State<CompanyStudioView> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
-            children: [
-              Container(
-                padding: const EdgeInsets.all(8),
-                decoration: BoxDecoration(
-                  color: const Color(0xFF6366F1).withValues(alpha: 0.15),
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: const Icon(Icons.menu_book_rounded, color: Color(0xFF818CF8), size: 20),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      '📚 Company Knowledge Base & AI Training Hub',
-                      style: GoogleFonts.outfit(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white),
-                    ),
-                    Text(
-                      'Store product catalogs, pricing, brand voice guidelines, and historical data for hyper-personalized agents.',
-                      style: GoogleFonts.inter(fontSize: 12.5, color: const Color(0xFF94A3B8)),
-                    ),
-                  ],
-                ),
-              ),
-              ElevatedButton.icon(
-                onPressed: _showAddKnowledgeDialog,
-                icon: const Icon(Icons.add, size: 16),
-                label: const Text('Add Document'),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF6366F1),
-                  foregroundColor: Colors.white,
-                ),
-              ),
-            ],
+          LayoutBuilder(
+            builder: (context, constraints) {
+              final isNarrow = constraints.maxWidth < 560;
+              return isNarrow
+                  ? Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            Container(
+                              padding: const EdgeInsets.all(8),
+                              decoration: BoxDecoration(
+                                color: const Color(0xFF6366F1).withValues(alpha: 0.15),
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              child: const Icon(Icons.menu_book_rounded, color: Color(0xFF818CF8), size: 18),
+                            ),
+                            const SizedBox(width: 10),
+                            Expanded(
+                              child: Text(
+                                '📚 Knowledge Base Hub',
+                                style: GoogleFonts.outfit(fontSize: 17, fontWeight: FontWeight.bold, color: Colors.white),
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          'Store product catalogs, pricing, brand voice guidelines for hyper-personalized agents.',
+                          style: GoogleFonts.inter(fontSize: 12, color: const Color(0xFF94A3B8)),
+                        ),
+                        const SizedBox(height: 10),
+                        SizedBox(
+                          width: double.infinity,
+                          child: ElevatedButton.icon(
+                            onPressed: _showAddKnowledgeDialog,
+                            icon: const Icon(Icons.add, size: 16),
+                            label: const Text('Add Document'),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: const Color(0xFF6366F1),
+                              foregroundColor: Colors.white,
+                            ),
+                          ),
+                        ),
+                      ],
+                    )
+                  : Row(
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.all(8),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFF6366F1).withValues(alpha: 0.15),
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: const Icon(Icons.menu_book_rounded, color: Color(0xFF818CF8), size: 20),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                '📚 Company Knowledge Base & AI Training Hub',
+                                style: GoogleFonts.outfit(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white),
+                              ),
+                              Text(
+                                'Store product catalogs, pricing, brand voice guidelines, and historical data for hyper-personalized agents.',
+                                style: GoogleFonts.inter(fontSize: 12.5, color: const Color(0xFF94A3B8)),
+                              ),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(width: 10),
+                        ElevatedButton.icon(
+                          onPressed: _showAddKnowledgeDialog,
+                          icon: const Icon(Icons.add, size: 16),
+                          label: const Text('Add Document'),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: const Color(0xFF6366F1),
+                            foregroundColor: Colors.white,
+                          ),
+                        ),
+                      ],
+                    );
+            },
           ),
           const SizedBox(height: 16),
 
           // Preset Seed Chips
-          Row(
-            children: [
-              Text(
-                'Quick Data Presets: ',
-                style: GoogleFonts.inter(fontSize: 12, fontWeight: FontWeight.w600, color: const Color(0xFF94A3B8)),
-              ),
-              const SizedBox(width: 8),
-              ActionChip(
-                backgroundColor: const Color(0xFF131B2E),
-                side: const BorderSide(color: Color(0xFF10B981)),
-                avatar: const Text('🍵', style: TextStyle(fontSize: 12)),
-                label: Text(
-                  'Seed Indian Tea Company Data',
-                  style: GoogleFonts.inter(fontSize: 11.5, color: const Color(0xFF34D399), fontWeight: FontWeight.w600),
-                ),
-                onPressed: () => _seedPreset('indian_tea'),
-              ),
-              const SizedBox(width: 8),
-              ActionChip(
-                backgroundColor: const Color(0xFF131B2E),
-                side: const BorderSide(color: Color(0xFF06B6D4)),
-                avatar: const Text('💻', style: TextStyle(fontSize: 12)),
-                label: Text(
-                  'Seed SaaS Platform Data',
-                  style: GoogleFonts.inter(fontSize: 11.5, color: const Color(0xFF38BDF8), fontWeight: FontWeight.w600),
-                ),
-                onPressed: () => _seedPreset('saas'),
-              ),
-            ],
+          LayoutBuilder(
+            builder: (context, constraints) {
+              return Wrap(
+                spacing: 8,
+                runSpacing: 8,
+                crossAxisAlignment: WrapCrossAlignment.center,
+                children: [
+                  Text(
+                    'Quick Presets: ',
+                    style: GoogleFonts.inter(fontSize: 12, fontWeight: FontWeight.w600, color: const Color(0xFF94A3B8)),
+                  ),
+                  _presetKnowledgeChip('Assam CTC Tea Specs', 'indian_tea'),
+                  _presetKnowledgeChip('SaaS Pricing & ROI', 'saas'),
+                ],
+              );
+            },
           ),
-          const Divider(height: 28, color: Color(0xFF1E293B)),
+          const SizedBox(height: 16),
 
+          // List of knowledge documents
           if (_isLoadingKnowledge)
-            const Center(child: Padding(padding: EdgeInsets.all(20), child: CircularProgressIndicator(color: Color(0xFF6366F1))))
+            const Center(child: CircularProgressIndicator())
           else if (_knowledgeItems.isEmpty)
             Container(
-              padding: const EdgeInsets.all(32),
+              padding: const EdgeInsets.all(24),
               alignment: Alignment.center,
-              child: Column(
-                children: [
-                  const Icon(Icons.auto_stories_outlined, size: 40, color: Color(0xFF64748B)),
-                  const SizedBox(height: 10),
-                  Text(
-                    'No Training Documents Added Yet',
-                    style: GoogleFonts.outfit(fontSize: 15, fontWeight: FontWeight.w600, color: Colors.white),
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    'Click "Seed Indian Tea Company Data" or "Add Document" to train the AI on specific products & FAQs.',
-                    style: GoogleFonts.inter(fontSize: 12.5, color: const Color(0xFF94A3B8)),
-                    textAlign: TextAlign.center,
-                  ),
-                ],
+              decoration: BoxDecoration(
+                color: const Color(0xFF131B2E),
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: const Color(0xFF1E293B)),
+              ),
+              child: Text(
+                'No training documents added yet. Click "+ Add Document" or select a Quick Preset above to empower your AI agents with company knowledge!',
+                textAlign: TextAlign.center,
+                style: GoogleFonts.inter(fontSize: 13, color: const Color(0xFF94A3B8)),
               ),
             )
           else
@@ -769,30 +830,41 @@ class _CompanyStudioViewState extends State<CompanyStudioView> {
                 return Container(
                   padding: const EdgeInsets.all(14),
                   decoration: BoxDecoration(
-                    color: const Color(0xFF0B0F19),
-                    borderRadius: BorderRadius.circular(10),
+                    color: const Color(0xFF131B2E),
+                    borderRadius: BorderRadius.circular(12),
                     border: Border.all(color: const Color(0xFF1E293B)),
                   ),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          Row(
-                            children: [
-                              Text(
-                                k.title,
-                                style: GoogleFonts.inter(fontSize: 14, fontWeight: FontWeight.bold, color: const Color(0xFFA5B4FC)),
-                              ),
-                              const SizedBox(width: 8),
-                              StatusChip(status: k.category.toUpperCase(), compact: true),
-                            ],
+                          Expanded(
+                            child: Row(
+                              children: [
+                                Text(
+                                  k.title,
+                                  style: GoogleFonts.outfit(fontSize: 15, fontWeight: FontWeight.bold, color: Colors.white),
+                                ),
+                                const SizedBox(width: 8),
+                                Container(
+                                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                                  decoration: BoxDecoration(
+                                    color: const Color(0xFF6366F1).withValues(alpha: 0.15),
+                                    borderRadius: BorderRadius.circular(6),
+                                  ),
+                                  child: Text(
+                                    k.category.toUpperCase(),
+                                    style: GoogleFonts.inter(fontSize: 10, fontWeight: FontWeight.w600, color: const Color(0xFF818CF8)),
+                                  ),
+                                ),
+                              ],
+                            ),
                           ),
                           IconButton(
                             icon: const Icon(Icons.delete_outline, size: 18, color: Color(0xFFF87171)),
-                            onPressed: () => _deleteKnowledge(k.id),
                             tooltip: 'Delete Document',
+                            onPressed: () => _deleteKnowledge(k.id),
                           ),
                         ],
                       ),
@@ -814,33 +886,77 @@ class _CompanyStudioViewState extends State<CompanyStudioView> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
-            children: [
-              Text(
-                'Enterprise Profile Settings',
-                style: GoogleFonts.outfit(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white),
-              ),
-              const Spacer(),
-              OutlinedButton.icon(
-                style: OutlinedButton.styleFrom(
-                  foregroundColor: const Color(0xFFF87171),
-                  side: const BorderSide(color: Color(0xFFEF4444)),
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-                ),
-                onPressed: () => _confirmDeleteCompany(c),
-                icon: const Icon(Icons.delete_outline_rounded, size: 16),
-                label: const Text('Delete Enterprise'),
-              ),
-              const SizedBox(width: 8),
-              ElevatedButton.icon(
-                style: ElevatedButton.styleFrom(padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10)),
-                onPressed: _isSaving ? null : _saveProfile,
-                icon: _isSaving
-                    ? const SizedBox(width: 14, height: 14, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
-                    : const Icon(Icons.save_outlined, size: 16),
-                label: Text(_isSaving ? 'Saving...' : 'Save Profile'),
-              ),
-            ],
+          LayoutBuilder(
+            builder: (context, constraints) {
+              final isNarrow = constraints.maxWidth < 520;
+              return isNarrow
+                  ? Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Enterprise Profile Settings',
+                          style: GoogleFonts.outfit(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white),
+                        ),
+                        const SizedBox(height: 10),
+                        Row(
+                          children: [
+                            Expanded(
+                              child: OutlinedButton.icon(
+                                style: OutlinedButton.styleFrom(
+                                  foregroundColor: const Color(0xFFF87171),
+                                  side: const BorderSide(color: Color(0xFFEF4444)),
+                                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+                                ),
+                                onPressed: () => _confirmDeleteCompany(c),
+                                icon: const Icon(Icons.delete_outline_rounded, size: 15),
+                                label: const Text('Delete', overflow: TextOverflow.ellipsis),
+                              ),
+                            ),
+                            const SizedBox(width: 8),
+                            Expanded(
+                              child: ElevatedButton.icon(
+                                style: ElevatedButton.styleFrom(padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8)),
+                                onPressed: _isSaving ? null : _saveProfile,
+                                icon: _isSaving
+                                    ? const SizedBox(width: 12, height: 12, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
+                                    : const Icon(Icons.save_outlined, size: 15),
+                                label: Text(_isSaving ? 'Saving...' : 'Save Profile', overflow: TextOverflow.ellipsis),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    )
+                  : Row(
+                      children: [
+                        Expanded(
+                          child: Text(
+                            'Enterprise Profile Settings',
+                            style: GoogleFonts.outfit(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white),
+                          ),
+                        ),
+                        OutlinedButton.icon(
+                          style: OutlinedButton.styleFrom(
+                            foregroundColor: const Color(0xFFF87171),
+                            side: const BorderSide(color: Color(0xFFEF4444)),
+                            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                          ),
+                          onPressed: () => _confirmDeleteCompany(c),
+                          icon: const Icon(Icons.delete_outline_rounded, size: 16),
+                          label: const Text('Delete Enterprise'),
+                        ),
+                        const SizedBox(width: 8),
+                        ElevatedButton.icon(
+                          style: ElevatedButton.styleFrom(padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10)),
+                          onPressed: _isSaving ? null : _saveProfile,
+                          icon: _isSaving
+                              ? const SizedBox(width: 14, height: 14, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
+                              : const Icon(Icons.save_outlined, size: 16),
+                          label: Text(_isSaving ? 'Saving...' : 'Save Profile'),
+                        ),
+                      ],
+                    );
+            },
           ),
           const SizedBox(height: 16),
           TextField(
@@ -849,24 +965,45 @@ class _CompanyStudioViewState extends State<CompanyStudioView> {
             decoration: const InputDecoration(labelText: 'Company / Brand Name'),
           ),
           const SizedBox(height: 12),
-          Row(
-            children: [
-              Expanded(
-                child: TextField(
-                  controller: _industryCtrl,
-                  style: const TextStyle(color: Colors.white),
-                  decoration: const InputDecoration(labelText: 'Industry / Niche'),
-                ),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: TextField(
-                  controller: _locationCtrl,
-                  style: const TextStyle(color: Colors.white),
-                  decoration: const InputDecoration(labelText: 'Target Geography / HQ'),
-                ),
-              ),
-            ],
+          LayoutBuilder(
+            builder: (context, constraints) {
+              final isNarrow = constraints.maxWidth < 450;
+              return isNarrow
+                  ? Column(
+                      children: [
+                        TextField(
+                          controller: _industryCtrl,
+                          style: const TextStyle(color: Colors.white),
+                          decoration: const InputDecoration(labelText: 'Industry / Niche'),
+                        ),
+                        const SizedBox(height: 12),
+                        TextField(
+                          controller: _locationCtrl,
+                          style: const TextStyle(color: Colors.white),
+                          decoration: const InputDecoration(labelText: 'Target Geography / HQ'),
+                        ),
+                      ],
+                    )
+                  : Row(
+                      children: [
+                        Expanded(
+                          child: TextField(
+                            controller: _industryCtrl,
+                            style: const TextStyle(color: Colors.white),
+                            decoration: const InputDecoration(labelText: 'Industry / Niche'),
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: TextField(
+                            controller: _locationCtrl,
+                            style: const TextStyle(color: Colors.white),
+                            decoration: const InputDecoration(labelText: 'Target Geography / HQ'),
+                          ),
+                        ),
+                      ],
+                    );
+            },
           ),
           const SizedBox(height: 12),
           TextField(
@@ -906,36 +1043,85 @@ class _CompanyStudioViewState extends State<CompanyStudioView> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
-            children: [
-              Text(
-                'Master AI Business Plan',
-                style: GoogleFonts.outfit(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white),
-              ),
-              const Spacer(),
-              if (plan != null)
-                IconButton(
-                  icon: const Icon(Icons.copy_rounded, color: Color(0xFF94A3B8)),
-                  tooltip: 'Copy Plan',
-                  onPressed: () {
-                    Clipboard.setData(ClipboardData(text: plan));
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('Copied Business Plan to clipboard!'), duration: Duration(seconds: 1)),
+          LayoutBuilder(
+            builder: (context, constraints) {
+              final isNarrow = constraints.maxWidth < 450;
+              return isNarrow
+                  ? Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            Expanded(
+                              child: Text(
+                                'Master AI Plan',
+                                style: GoogleFonts.outfit(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white),
+                              ),
+                            ),
+                            if (plan != null)
+                              IconButton(
+                                icon: const Icon(Icons.copy_rounded, color: Color(0xFF94A3B8)),
+                                tooltip: 'Copy Plan',
+                                onPressed: () {
+                                  Clipboard.setData(ClipboardData(text: plan));
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    const SnackBar(content: Text('Copied Business Plan to clipboard!'), duration: Duration(seconds: 1)),
+                                  );
+                                },
+                              ),
+                          ],
+                        ),
+                        const SizedBox(height: 8),
+                        SizedBox(
+                          width: double.infinity,
+                          child: ElevatedButton.icon(
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: const Color(0xFF06B6D4),
+                              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                            ),
+                            onPressed: _isGeneratingPlan ? null : _generatePlan,
+                            icon: _isGeneratingPlan
+                                ? const SizedBox(width: 14, height: 14, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
+                                : const Icon(Icons.auto_awesome, size: 16),
+                            label: Text(_isGeneratingPlan ? 'Generating...' : (plan == null ? 'Generate Plan' : 'Regenerate Plan')),
+                          ),
+                        ),
+                      ],
+                    )
+                  : Row(
+                      children: [
+                        Expanded(
+                          child: Text(
+                            'Master AI Business Plan',
+                            style: GoogleFonts.outfit(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white),
+                          ),
+                        ),
+                        if (plan != null)
+                          IconButton(
+                            icon: const Icon(Icons.copy_rounded, color: Color(0xFF94A3B8)),
+                            tooltip: 'Copy Plan',
+                            onPressed: () {
+                              Clipboard.setData(ClipboardData(text: plan));
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(content: Text('Copied Business Plan to clipboard!'), duration: Duration(seconds: 1)),
+                              );
+                            },
+                          ),
+                        const SizedBox(width: 8),
+                        ElevatedButton.icon(
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: const Color(0xFF06B6D4),
+                            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                          ),
+                          onPressed: _isGeneratingPlan ? null : _generatePlan,
+                          icon: _isGeneratingPlan
+                              ? const SizedBox(width: 14, height: 14, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
+                              : const Icon(Icons.auto_awesome, size: 16),
+                          label: Text(_isGeneratingPlan ? 'Generating...' : (plan == null ? 'Generate Plan' : 'Regenerate Plan')),
+                        ),
+                      ],
                     );
-                  },
-                ),
-              ElevatedButton.icon(
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF06B6D4),
-                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-                ),
-                onPressed: _isGeneratingPlan ? null : _generatePlan,
-                icon: _isGeneratingPlan
-                    ? const SizedBox(width: 14, height: 14, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
-                    : const Icon(Icons.auto_awesome, size: 16),
-                label: Text(_isGeneratingPlan ? 'Generating...' : (plan == null ? 'Generate Plan' : 'Regenerate Plan')),
-              ),
-            ],
+            },
           ),
           const Divider(color: Color(0xFF1E293B), height: 24),
           if (plan != null)
@@ -969,6 +1155,19 @@ class _CompanyStudioViewState extends State<CompanyStudioView> {
             ),
         ],
       ),
+    );
+  }
+
+  Widget _presetKnowledgeChip(String label, String preset) {
+    return ActionChip(
+      backgroundColor: const Color(0xFF1E293B),
+      side: const BorderSide(color: Color(0xFF334155)),
+      avatar: const Text('🌱', style: TextStyle(fontSize: 11)),
+      label: Text(
+        label,
+        style: GoogleFonts.inter(fontSize: 11, color: const Color(0xFFE2E8F0)),
+      ),
+      onPressed: () => _seedPreset(preset),
     );
   }
 }

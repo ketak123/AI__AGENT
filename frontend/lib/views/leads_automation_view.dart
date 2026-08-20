@@ -362,55 +362,108 @@ class _LeadsAutomationViewState extends State<LeadsAutomationView> {
   }
 
   Widget _buildHeader() {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                '🎯 Inbound Ad Leads & Autonomous Auto-Responder',
-                style: GoogleFonts.outfit(
-                  fontSize: 22,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.white,
-                ),
-              ),
-              const SizedBox(height: 4),
-              Text(
-                'Capture customer leads from Facebook, Instagram, Google Ads & auto-send personalized WhatsApp & Email messages.',
-                style: GoogleFonts.inter(fontSize: 13, color: const Color(0xFF94A3B8)),
-              ),
-            ],
-          ),
-        ),
-        const SizedBox(width: 12),
-        Wrap(
-          spacing: 8,
-          children: [
-            OutlinedButton.icon(
-              onPressed: _showCredentialsDialog,
-              icon: const Icon(Icons.tune_rounded, size: 16),
-              label: const Text('Channel Keys'),
-              style: OutlinedButton.styleFrom(
-                foregroundColor: const Color(0xFFA5B4FC),
-                side: const BorderSide(color: Color(0xFF4F46E5)),
-              ),
-            ),
-            ElevatedButton.icon(
-              onPressed: _loadLeads,
-              icon: const Icon(Icons.refresh, size: 16),
-              label: const Text('Refresh'),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF1E293B),
-                foregroundColor: Colors.white,
-                side: const BorderSide(color: Color(0xFF334155)),
-              ),
-            ),
-          ],
-        ),
-      ],
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final isNarrow = constraints.maxWidth < 600;
+        return isNarrow
+            ? Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    '🎯 Inbound Leads & Auto-Responder',
+                    style: GoogleFonts.outfit(
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    'Capture customer leads from Facebook, Instagram, Google Ads & auto-send personalized WhatsApp & Email messages.',
+                    style: GoogleFonts.inter(fontSize: 13, color: const Color(0xFF94A3B8)),
+                  ),
+                  const SizedBox(height: 12),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: OutlinedButton.icon(
+                          onPressed: _showCredentialsDialog,
+                          icon: const Icon(Icons.tune_rounded, size: 16),
+                          label: const Text('Channel Keys', overflow: TextOverflow.ellipsis),
+                          style: OutlinedButton.styleFrom(
+                            foregroundColor: const Color(0xFFA5B4FC),
+                            side: const BorderSide(color: Color(0xFF4F46E5)),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: ElevatedButton.icon(
+                          onPressed: _loadLeads,
+                          icon: const Icon(Icons.refresh, size: 16),
+                          label: const Text('Refresh', overflow: TextOverflow.ellipsis),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: const Color(0xFF1E293B),
+                            foregroundColor: Colors.white,
+                            side: const BorderSide(color: Color(0xFF334155)),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              )
+            : Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          '🎯 Inbound Ad Leads & Autonomous Auto-Responder',
+                          style: GoogleFonts.outfit(
+                            fontSize: 22,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white,
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          'Capture customer leads from Facebook, Instagram, Google Ads & auto-send personalized WhatsApp & Email messages.',
+                          style: GoogleFonts.inter(fontSize: 13, color: const Color(0xFF94A3B8)),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Wrap(
+                    spacing: 8,
+                    children: [
+                      OutlinedButton.icon(
+                        onPressed: _showCredentialsDialog,
+                        icon: const Icon(Icons.tune_rounded, size: 16),
+                        label: const Text('Channel Keys'),
+                        style: OutlinedButton.styleFrom(
+                          foregroundColor: const Color(0xFFA5B4FC),
+                          side: const BorderSide(color: Color(0xFF4F46E5)),
+                        ),
+                      ),
+                      ElevatedButton.icon(
+                        onPressed: _loadLeads,
+                        icon: const Icon(Icons.refresh, size: 16),
+                        label: const Text('Refresh'),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFF1E293B),
+                          foregroundColor: Colors.white,
+                          side: const BorderSide(color: Color(0xFF334155)),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              );
+      },
     );
   }
 

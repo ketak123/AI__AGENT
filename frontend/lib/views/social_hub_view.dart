@@ -336,37 +336,74 @@ class _SocialHubViewState extends State<SocialHubView> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // Header
-            Row(
-              children: [
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'Omnichannel Social & Growth Hub',
-                        style: GoogleFonts.outfit(
-                          fontSize: 22,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.white,
-                        ),
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        'Target: $compName • Compose, schedule, and auto-dispatch announcements across X, LinkedIn, Instagram & WhatsApp.',
-                        style: GoogleFonts.inter(
-                          fontSize: 13.5,
-                          color: const Color(0xFF94A3B8),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                ElevatedButton.icon(
-                  onPressed: _showAddAccountDialog,
-                  icon: const Icon(Icons.add_link, size: 18),
-                  label: const Text('Connect Account'),
-                ),
-              ],
+            LayoutBuilder(
+              builder: (context, constraints) {
+                final isNarrow = constraints.maxWidth < 600;
+                return isNarrow
+                    ? Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Omnichannel Social & Growth Hub',
+                            style: GoogleFonts.outfit(
+                              fontSize: 20,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.white,
+                            ),
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            'Target: $compName • Compose, schedule, and auto-dispatch announcements across X, LinkedIn, Instagram & WhatsApp.',
+                            style: GoogleFonts.inter(
+                              fontSize: 13,
+                              color: const Color(0xFF94A3B8),
+                            ),
+                          ),
+                          const SizedBox(height: 12),
+                          SizedBox(
+                            width: double.infinity,
+                            child: ElevatedButton.icon(
+                              onPressed: _showAddAccountDialog,
+                              icon: const Icon(Icons.add_link, size: 18),
+                              label: const Text('Connect Account'),
+                            ),
+                          ),
+                        ],
+                      )
+                    : Row(
+                        children: [
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  'Omnichannel Social & Growth Hub',
+                                  style: GoogleFonts.outfit(
+                                    fontSize: 22,
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.white,
+                                  ),
+                                ),
+                                const SizedBox(height: 4),
+                                Text(
+                                  'Target: $compName • Compose, schedule, and auto-dispatch announcements across X, LinkedIn, Instagram & WhatsApp.',
+                                  style: GoogleFonts.inter(
+                                    fontSize: 13.5,
+                                    color: const Color(0xFF94A3B8),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          ElevatedButton.icon(
+                            onPressed: _showAddAccountDialog,
+                            icon: const Icon(Icons.add_link, size: 18),
+                            label: const Text('Connect Account'),
+                          ),
+                        ],
+                      );
+              },
             ),
 
             const SizedBox(height: 20),

@@ -783,9 +783,13 @@ class _HomeShellState extends State<HomeShell> {
             child: const Icon(Icons.auto_awesome, color: Colors.white, size: 16),
           ),
           const SizedBox(width: 8),
-          Text(
-            _selectedCompany?.name ?? AppConstants.appName,
-            style: GoogleFonts.outfit(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white),
+          Expanded(
+            child: Text(
+              _selectedCompany?.name ?? AppConstants.appName,
+              style: GoogleFonts.outfit(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
           ),
         ],
       ),

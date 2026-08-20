@@ -224,63 +224,124 @@ class _OrchestratorViewState extends State<OrchestratorView> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Header Banner
             GlassCard(
               padding: const EdgeInsets.all(20),
-              child: Row(
-                children: [
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
+              child: LayoutBuilder(
+                builder: (context, constraints) {
+                  final isNarrow = constraints.maxWidth < 620;
+                  return isNarrow
+                      ? Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
+                            Row(
+                              children: [
+                                Expanded(
+                                  child: Text(
+                                    'Multi-Agent Orchestrator',
+                                    style: GoogleFonts.outfit(
+                                      fontSize: 20,
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.white,
+                                    ),
+                                  ),
+                                ),
+                                const SizedBox(width: 8),
+                                if (_isOrchestrating)
+                                  const StatusChip(status: 'running')
+                                else
+                                  const StatusChip(status: 'active'),
+                              ],
+                            ),
+                            const SizedBox(height: 6),
                             Text(
-                              'Multi-Agent Orchestrator',
-                              style: GoogleFonts.outfit(
-                                fontSize: 22,
-                                fontWeight: FontWeight.bold,
-                                color: Colors.white,
+                              'Target: $compName • Autonomous execution pipeline across Strategy, Product, Growth, Finance & Social',
+                              style: GoogleFonts.inter(
+                                fontSize: 13,
+                                color: const Color(0xFF94A3B8),
                               ),
                             ),
-                            const SizedBox(width: 10),
-                            if (_isOrchestrating)
-                              const StatusChip(status: 'running')
-                            else
-                              const StatusChip(status: 'active'),
+                            const SizedBox(height: 14),
+                            SizedBox(
+                              width: double.infinity,
+                              child: ElevatedButton.icon(
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: const Color(0xFF6366F1),
+                                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                                ),
+                                icon: _isOrchestrating
+                                    ? const SizedBox(
+                                        width: 18,
+                                        height: 18,
+                                        child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                                      )
+                                    : const Icon(Icons.rocket_launch_rounded, size: 20),
+                                label: Text(
+                                  _isOrchestrating ? 'Pipeline Running...' : 'Trigger Full Pipeline',
+                                  style: GoogleFonts.inter(fontWeight: FontWeight.bold, fontSize: 14),
+                                ),
+                                onPressed: _isOrchestrating ? null : _runPipeline,
+                              ),
+                            ),
                           ],
-                        ),
-                        const SizedBox(height: 6),
-                        Text(
-                          'Target: $compName • Autonomous execution pipeline across Strategy, Product, Growth, Finance & Social',
-                          style: GoogleFonts.inter(
-                            fontSize: 13.5,
-                            color: const Color(0xFF94A3B8),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  ElevatedButton.icon(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF6366F1),
-                      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                    ),
-                    icon: _isOrchestrating
-                        ? const SizedBox(
-                            width: 18,
-                            height: 18,
-                            child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
-                          )
-                        : const Icon(Icons.rocket_launch_rounded, size: 20),
-                    label: Text(
-                      _isOrchestrating ? 'Pipeline Running...' : 'Trigger Full Pipeline',
-                      style: GoogleFonts.inter(fontWeight: FontWeight.bold, fontSize: 14),
-                    ),
-                    onPressed: _isOrchestrating ? null : _runPipeline,
-                  ),
-                ],
+                        )
+                      : Row(
+                          children: [
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Row(
+                                    children: [
+                                      Text(
+                                        'Multi-Agent Orchestrator',
+                                        style: GoogleFonts.outfit(
+                                          fontSize: 22,
+                                          fontWeight: FontWeight.bold,
+                                          color: Colors.white,
+                                        ),
+                                      ),
+                                      const SizedBox(width: 10),
+                                      if (_isOrchestrating)
+                                        const StatusChip(status: 'running')
+                                      else
+                                        const StatusChip(status: 'active'),
+                                    ],
+                                  ),
+                                  const SizedBox(height: 6),
+                                  Text(
+                                    'Target: $compName • Autonomous execution pipeline across Strategy, Product, Growth, Finance & Social',
+                                    style: GoogleFonts.inter(
+                                      fontSize: 13.5,
+                                      color: const Color(0xFF94A3B8),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            const SizedBox(width: 16),
+                            ElevatedButton.icon(
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: const Color(0xFF6366F1),
+                                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                              ),
+                              icon: _isOrchestrating
+                                  ? const SizedBox(
+                                      width: 18,
+                                      height: 18,
+                                      child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                                    )
+                                  : const Icon(Icons.rocket_launch_rounded, size: 20),
+                              label: Text(
+                                _isOrchestrating ? 'Pipeline Running...' : 'Trigger Full Pipeline',
+                                style: GoogleFonts.inter(fontWeight: FontWeight.bold, fontSize: 14),
+                              ),
+                              onPressed: _isOrchestrating ? null : _runPipeline,
+                            ),
+                          ],
+                        );
+                },
               ),
             ),
 
@@ -296,6 +357,13 @@ class _OrchestratorViewState extends State<OrchestratorView> {
             LayoutBuilder(
               builder: (context, constraints) {
                 final isWide = constraints.maxWidth > 800;
+                final isNarrowMobile = constraints.maxWidth < 400;
+                final itemWidth = isWide
+                    ? (constraints.maxWidth - 48) / 5
+                    : isNarrowMobile
+                        ? constraints.maxWidth
+                        : (constraints.maxWidth - 12) / 2;
+
                 return Wrap(
                   spacing: 12,
                   runSpacing: 12,
@@ -309,7 +377,7 @@ class _OrchestratorViewState extends State<OrchestratorView> {
                     final latestTask = matchingTask.isNotEmpty ? matchingTask.first : null;
 
                     return SizedBox(
-                      width: isWide ? (constraints.maxWidth - 48) / 5 : (constraints.maxWidth - 12) / 2,
+                      width: itemWidth,
                       child: Container(
                         padding: const EdgeInsets.all(14),
                         decoration: BoxDecoration(
@@ -356,27 +424,26 @@ class _OrchestratorViewState extends State<OrchestratorView> {
                             const SizedBox(height: 4),
                             Text(
                               role['desc'] as String,
-                              style: GoogleFonts.inter(
-                                fontSize: 11,
-                                color: const Color(0xFF64748B),
-                              ),
+                              style: GoogleFonts.inter(fontSize: 11, color: const Color(0xFF94A3B8)),
                               maxLines: 2,
                               overflow: TextOverflow.ellipsis,
                             ),
-                            const SizedBox(height: 10),
+                            const SizedBox(height: 12),
                             SizedBox(
                               width: double.infinity,
                               child: OutlinedButton(
                                 style: OutlinedButton.styleFrom(
-                                  padding: const EdgeInsets.symmetric(vertical: 6),
-                                  side: BorderSide(color: color.withValues(alpha: 0.4)),
+                                  side: BorderSide(color: color.withValues(alpha: 0.5)),
+                                  padding: const EdgeInsets.symmetric(vertical: 8),
                                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
                                 ),
-                                onPressed: () => _runSingleAgent(agentKey),
+                                onPressed: latestTask != null && latestTask.isRunning
+                                    ? null
+                                    : () => _runSingleAgent(agentKey),
                                 child: Text(
-                                  'Run Agent',
+                                  latestTask != null && latestTask.isRunning ? 'Running...' : 'Run Agent',
                                   style: GoogleFonts.inter(
-                                    fontSize: 11.5,
+                                    fontSize: 12,
                                     color: color,
                                     fontWeight: FontWeight.w600,
                                   ),
@@ -468,22 +535,27 @@ class _OrchestratorViewState extends State<OrchestratorView> {
                             children: [
                               Row(
                                 children: [
-                                  Text(
-                                    task.title.isNotEmpty ? task.title : role['name'] as String,
-                                    style: GoogleFonts.inter(
-                                      fontSize: 14,
-                                      fontWeight: FontWeight.w600,
-                                      color: Colors.white,
+                                  Expanded(
+                                    child: Text(
+                                      task.title.isNotEmpty ? task.title : (role['name'] as String),
+                                      style: GoogleFonts.inter(
+                                        fontSize: 14,
+                                        fontWeight: FontWeight.w600,
+                                        color: Colors.white,
+                                      ),
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
                                     ),
                                   ),
                                   const SizedBox(width: 8),
                                   StatusChip(status: task.status, compact: true),
-                                  const Spacer(),
-                                  if (task.createdAt != null)
+                                  if (task.createdAt != null) ...[
+                                    const SizedBox(width: 8),
                                     Text(
                                       '${task.createdAt!.hour.toString().padLeft(2, '0')}:${task.createdAt!.minute.toString().padLeft(2, '0')}',
                                       style: GoogleFonts.inter(fontSize: 11, color: const Color(0xFF64748B)),
                                     ),
+                                  ],
                                 ],
                               ),
                               const SizedBox(height: 6),
