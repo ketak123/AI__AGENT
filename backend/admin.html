@@ -1,0 +1,805 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Autonomous Business Multi-Agent Console</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #0b0f19;
+      --card: rgba(18, 24, 38, 0.85);
+      --card-border: rgba(255, 255, 255, 0.08);
+      --primary: #6366f1;
+      --primary-hover: #4f46e5;
+      --accent: #06b6d4;
+      --success: #10b981;
+      --warning: #f59e0b;
+      --text: #f3f4f6;
+      --text-muted: #9ca3af;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Inter', -apple-system, sans-serif;
+      background: radial-gradient(circle at 10% 20%, #1e1b4b 0%, #0b0f19 90%);
+      color: var(--text);
+      min-height: 100vh;
+      padding: 2rem 1.5rem;
+    }
+    .container { max-width: 1200px; margin: 0 auto; }
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 2rem;
+      padding-bottom: 1.5rem;
+      border-bottom: 1px solid var(--card-border);
+    }
+    .title-group h1 {
+      font-size: 1.75rem;
+      font-weight: 700;
+      background: linear-gradient(135deg, #a5b4fc, #38bdf8);
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      padding: 0.35rem 0.75rem;
+      border-radius: 9999px;
+      font-size: 0.8rem;
+      font-weight: 500;
+      background: rgba(16, 185, 129, 0.15);
+      color: #34d399;
+      border: 1px solid rgba(16, 185, 129, 0.3);
+    }
+    .grid { display: grid; grid-template-columns: 1fr 2fr; gap: 1.5rem; }
+    @media (max-width: 860px) { .grid { grid-template-columns: 1fr; } }
+    .card {
+      background: var(--card);
+      border: 1px solid var(--card-border);
+      border-radius: 1rem;
+      padding: 1.5rem;
+      backdrop-filter: blur(12px);
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+    }
+    .card h2 { font-size: 1.15rem; font-weight: 600; margin-bottom: 1.25rem; }
+    .form-group { margin-bottom: 1rem; }
+    label { display: block; font-size: 0.85rem; color: var(--text-muted); margin-bottom: 0.35rem; }
+    input, select, textarea {
+      width: 100%;
+      padding: 0.65rem 0.85rem;
+      background: rgba(0, 0, 0, 0.35);
+      border: 1px solid var(--card-border);
+      border-radius: 0.5rem;
+      color: white;
+      font-family: inherit;
+      font-size: 0.9rem;
+      transition: border-color 0.2s;
+    }
+    input:focus, select:focus, textarea:focus { outline: none; border-color: var(--primary); }
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      padding: 0.65rem 1.25rem;
+      background: var(--primary);
+      color: white;
+      border: none;
+      border-radius: 0.5rem;
+      font-weight: 600;
+      font-size: 0.875rem;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .btn:hover { background: var(--primary-hover); transform: translateY(-1px); }
+    .btn-sm { padding: 0.35rem 0.75rem; font-size: 0.75rem; border-radius: 0.35rem; }
+    .btn-outline {
+      background: transparent;
+      border: 1px solid var(--card-border);
+      color: var(--text);
+    }
+    .btn-outline:hover { background: rgba(255, 255, 255, 0.05); }
+    .company-card {
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid var(--card-border);
+      border-radius: 0.75rem;
+      padding: 1.25rem;
+      margin-bottom: 1rem;
+      transition: border-color 0.2s;
+    }
+    .company-card:hover { border-color: rgba(99, 102, 241, 0.4); }
+    .company-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem; }
+    .actions { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 1rem; }
+    .task-log {
+      max-height: 400px;
+      overflow-y: auto;
+      background: rgba(0, 0, 0, 0.4);
+      border-radius: 0.5rem;
+      padding: 1rem;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.8rem;
+      line-height: 1.5;
+    }
+    .task-item { padding: 0.5rem 0; border-bottom: 1px solid rgba(255, 255, 255, 0.05); }
+    .nav-tabs { display: flex; gap: 0.5rem; margin-bottom: 1.5rem; border-bottom: 1px solid var(--card-border); padding-bottom: 0.75rem; }
+    .tab-btn { background: transparent; border: none; color: var(--text-muted); padding: 0.5rem 1rem; font-size: 0.9rem; font-weight: 600; cursor: pointer; border-radius: 0.5rem; }
+    .tab-btn.active { background: rgba(99, 102, 241, 0.2); color: white; border: 1px solid rgba(99, 102, 241, 0.4); }
+    .lead-box { background: rgba(0,0,0,0.3); border: 1px solid var(--card-border); border-radius: 0.75rem; padding: 1rem; margin-bottom: 0.75rem; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <div class="title-group">
+        <h1>Autonomous Business Suite</h1>
+        <p style="color: var(--text-muted); font-size: 0.875rem; margin-top: 0.25rem;">Multi-Channel Engine: WhatsApp • Instagram • Email • Custom Company Training</p>
+      </div>
+      <div id="healthBadge" class="badge">● System Online (Port 8001)</div>
+    </header>
+
+    <div class="nav-tabs">
+      <button class="tab-btn active" onclick="switchTab('enterprises')">🏢 Enterprises & Agents</button>
+      <button class="tab-btn" onclick="switchTab('leads')">🎯 Inbound Ad Lead & WhatsApp Auto-Responder</button>
+      <button class="tab-btn" onclick="switchTab('knowledge')">📚 Company Knowledge & Training</button>
+      <button class="tab-btn" onclick="switchTab('integrations')">⚙️ Channel Integrations</button>
+      <button class="tab-btn" onclick="switchTab('ai')">🧠 AI Brain & Models</button>
+    </div>
+
+    <!-- TAB 1: Enterprises & Pipeline -->
+    <div id="tab-enterprises">
+      <div class="grid">
+        <div>
+          <div class="card" style="margin-bottom: 1.5rem;">
+            <h2>Register Enterprise</h2>
+            <div class="form-group">
+              <label>Enterprise Name</label>
+              <input id="compName" placeholder="e.g. ChaiVeda Indian Tea Co." />
+            </div>
+            <div class="form-group">
+              <label>Industry</label>
+              <input id="compIndustry" placeholder="e.g. Premium Single-Estate Tea & Spices" />
+            </div>
+            <div class="form-group">
+              <label>Monthly Budget / Scale</label>
+              <input id="compBudget" placeholder="e.g. ₹50,000 / month" />
+            </div>
+            <button class="btn" style="width: 100%;" onclick="createCompany()">Create Enterprise</button>
+          </div>
+
+          <div class="card">
+            <h2>Agent Execution Logs</h2>
+            <div id="taskLogs" class="task-log">
+              <em>Loading recent agent tasks...</em>
+            </div>
+            <button class="btn btn-outline btn-sm" style="width: 100%; margin-top: 0.75rem;" onclick="loadTasks()">Refresh Logs</button>
+          </div>
+        </div>
+
+        <!-- Companies List -->
+        <div class="card">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem;">
+            <h2>Configured Enterprises</h2>
+            <button class="btn btn-outline btn-sm" onclick="loadCompanies()">Refresh</button>
+          </div>
+          <div id="companiesList">
+            <p style="color: var(--text-muted);">Loading enterprises...</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 2: Inbound Leads & WhatsApp Auto-Responder -->
+    <div id="tab-leads" style="display: none;">
+      <div class="grid">
+        <div class="card">
+          <h2>Simulate Inbound Ad Lead</h2>
+          <p style="color: var(--text-muted); font-size: 0.8rem; margin-bottom: 1rem;">
+            Simulate a customer submitting a Facebook/Instagram Ad lead form or website inquiry. The system instantly generates and dispatches a personalized WhatsApp & Email reply trained on company data!
+          </p>
+          <div class="form-group">
+            <label>Select Enterprise</label>
+            <select id="leadCompanySelect"></select>
+          </div>
+          <div class="form-group">
+            <label>Lead Full Name</label>
+            <input id="leadName" placeholder="e.g. Rahul Sharma" value="Rahul Sharma" />
+          </div>
+          <div class="form-group">
+            <label>Customer WhatsApp Number</label>
+            <input id="leadPhone" placeholder="e.g. +91 98765 43210" value="+91 98765 43210" />
+          </div>
+          <div class="form-group">
+            <label>Customer Email</label>
+            <input id="leadEmail" placeholder="e.g. rahul.sharma@example.com" value="rahul.sharma@example.com" />
+          </div>
+          <div class="form-group">
+            <label>Ad Platform / Lead Source</label>
+            <select id="leadSource">
+              <option value="facebook_ad">Facebook Lead Ad</option>
+              <option value="instagram_ad" selected>Instagram Sponsored Story Ad</option>
+              <option value="google_ad">Google Search Ad</option>
+              <option value="website_form">Direct Website Inquiry</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Customer Interest / Query</label>
+            <textarea id="leadInterest" rows="3" placeholder="e.g. Inquiring about Assam CTC Masala Chai sample packs for my cafe">Looking for authentic Assam CTC and Masala Chai sample packs for my new cafe chain in Bengaluru.</textarea>
+          </div>
+          <button class="btn" style="width: 100%;" onclick="submitInboundLead()">⚡ Capture Lead & Trigger Auto-Responder</button>
+        </div>
+
+        <div class="card">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem;">
+            <h2>Captured Leads & Message Timeline</h2>
+            <button class="btn btn-outline btn-sm" onclick="loadLeads()">Refresh</button>
+          </div>
+          <div id="leadsContainer" style="max-height: 650px; overflow-y: auto;">
+            <em>Loading leads...</em>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 3: Knowledge Base & Training -->
+    <div id="tab-knowledge" style="display: none;">
+      <div class="grid">
+        <div class="card">
+          <h2>Add Knowledge / Training Entry</h2>
+          <div class="form-group">
+            <label>Select Enterprise</label>
+            <select id="kbCompanySelect" onchange="loadKnowledge()"></select>
+          </div>
+          <div class="form-group">
+            <label>Document / Topic Title</label>
+            <input id="kbTitle" placeholder="e.g. 2026 Product Catalog & Pricing" />
+          </div>
+          <div class="form-group">
+            <label>Category</label>
+            <select id="kbCategory">
+              <option value="product">Product Catalog & Specs</option>
+              <option value="brand_tone">Brand Voice & Guidelines</option>
+              <option value="faq">Customer FAQs & Policies</option>
+              <option value="past_campaign">High-Performing Past Campaigns</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Content / Training Text</label>
+            <textarea id="kbContent" rows="5" placeholder="Enter detailed company training data..."></textarea>
+          </div>
+          <button class="btn" style="width: 100%; margin-bottom: 0.75rem;" onclick="addKnowledge()">Save Knowledge Item</button>
+          <div style="display: flex; gap: 0.5rem;">
+            <button class="btn btn-outline btn-sm" style="flex: 1;" onclick="seedKnowledge('indian_tea')">🌱 Seed Indian Tea Preset</button>
+            <button class="btn btn-outline btn-sm" style="flex: 1;" onclick="seedKnowledge('saas')">🌱 Seed SaaS Preset</button>
+          </div>
+        </div>
+
+        <div class="card">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem;">
+            <h2>Active Training Documents</h2>
+            <button class="btn btn-outline btn-sm" onclick="loadKnowledge()">Refresh</button>
+          </div>
+          <div id="knowledgeList" style="max-height: 600px; overflow-y: auto;">
+            <em>Select an enterprise to view training knowledge...</em>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 4: Channel Integrations -->
+    <div id="tab-integrations" style="display: none;">
+      <div class="card">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+          <h2>Channel Integrations & API Credentials</h2>
+          <div style="width: 250px;">
+            <select id="integCompanySelect" onchange="loadIntegrations()"></select>
+          </div>
+        </div>
+
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 1.5rem;">
+          <!-- WhatsApp -->
+          <div class="company-card">
+            <h3 style="margin-bottom: 0.75rem;">💬 WhatsApp Business API</h3>
+            <p style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 1rem;">Configure Meta Cloud API or Twilio WhatsApp credentials.</p>
+            <div class="form-group">
+              <label>Phone Number ID / From Number</label>
+              <input id="waPhoneId" placeholder="e.g. 109283746592019" />
+            </div>
+            <div class="form-group">
+              <label>Access Token / Twilio Auth</label>
+              <input id="waToken" type="password" placeholder="EAAB..." />
+            </div>
+            <button class="btn btn-sm" style="width: 100%;" onclick="saveIntegration('whatsapp')">Save WhatsApp Config</button>
+          </div>
+
+          <!-- Email -->
+          <div class="company-card">
+            <h3 style="margin-bottom: 0.75rem;">✉️ Email Auto-Responder</h3>
+            <p style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 1rem;">Configure SMTP or Resend API key for automated lead emails.</p>
+            <div class="form-group">
+              <label>Resend API Key / SMTP Host</label>
+              <input id="emailKey" placeholder="re_..." />
+            </div>
+            <div class="form-group">
+              <label>Sender Email (From)</label>
+              <input id="emailFrom" placeholder="hello@yourcompany.com" />
+            </div>
+            <button class="btn btn-sm" style="width: 100%;" onclick="saveIntegration('email')">Save Email Config</button>
+          </div>
+
+          <!-- Instagram -->
+          <div class="company-card">
+            <h3 style="margin-bottom: 0.75rem;">📸 Instagram Business</h3>
+            <p style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 1rem;">Connect Instagram Graph API for automated DMs & posts.</p>
+            <div class="form-group">
+              <label>Instagram User / Account ID</label>
+              <input id="igUserId" placeholder="17841400000000" />
+            </div>
+            <div class="form-group">
+              <label>Access Token</label>
+              <input id="igToken" type="password" placeholder="IGQVJ..." />
+            </div>
+            <button class="btn btn-sm" style="width: 100%;" onclick="saveIntegration('instagram')">Save Instagram Config</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 5: AI Brain & LLM Models -->
+    <div id="tab-ai" style="display: none;">
+      <div class="grid">
+        <div class="card">
+          <h2>🧠 Live AI Brain & LLM Engine</h2>
+          <div id="aiStatusBanner" style="margin-bottom: 1.25rem; padding: 0.75rem 1rem; border-radius: 0.5rem; background: rgba(16, 185, 129, 0.15); border: 1px solid rgba(16, 185, 129, 0.3); font-size: 0.85rem; color: #34d399;">
+            ● Checking AI Engine Status...
+          </div>
+          <p style="color: var(--text-muted); font-size: 0.8rem; margin-bottom: 1.25rem;">
+            Connect your AI provider API keys to enable genuine ChatGPT and Gemini-grade conversational intelligence, auto-pitching, and lead responses.
+          </p>
+
+          <div class="form-group">
+            <label>Google Gemini API Key (Recommended - Free Tier)</label>
+            <input id="aiGeminiKey" type="password" placeholder="AIzaSy..." />
+            <small style="color: var(--text-muted); font-size: 0.75rem;">Get free key at <a href="https://aistudio.google.com/app/apikey" target="_blank" style="color: #818cf8;">aistudio.google.com</a></small>
+          </div>
+
+          <div class="form-group">
+            <label>OpenAI API Key (GPT-4o / GPT-4o-mini)</label>
+            <input id="aiOpenaiKey" type="password" placeholder="sk-proj-..." />
+          </div>
+
+          <div class="form-group">
+            <label>Groq Cloud API Key (Ultra-Fast Free Llama 3.3 70B)</label>
+            <input id="aiGroqKey" type="password" placeholder="gsk_..." />
+          </div>
+
+          <div class="form-group">
+            <label>Anthropic API Key (Claude 3.5 Sonnet)</label>
+            <input id="aiAnthropicKey" type="password" placeholder="sk-ant-..." />
+          </div>
+
+          <button class="btn" style="width: 100%;" onclick="saveAIConfig()">💾 Save AI Brain Keys</button>
+        </div>
+
+        <div class="card">
+          <h2>⚡ Live AI Chat & Reasoning Sandbox</h2>
+          <p style="color: var(--text-muted); font-size: 0.8rem; margin-bottom: 1rem;">
+            Test the active AI brain live. Ask any custom question about your company or describe a new business idea.
+          </p>
+          <div class="form-group">
+            <label>Test Prompt / Business Query</label>
+            <textarea id="aiTestPrompt" rows="3" placeholder="e.g. I run an organic kombucha startup in Mumbai. Give me 3 viral growth hacks and pricing tiers.">I am starting an artisanal specialty tea brand in Assam called TeaHeritage. Give me 3 unique revenue streams and a viral marketing hook.</textarea>
+          </div>
+          <button class="btn" id="aiTestBtn" onclick="runAITest()">✨ Generate Real-Time AI Response</button>
+
+          <div id="aiTestResult" style="margin-top: 1.25rem; display: none;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+              <strong style="color: #a5b4fc; font-size: 0.9rem;">🤖 Live AI Response (<span id="aiModelName"></span>):</strong>
+            </div>
+            <div id="aiResponseContent" style="background: rgba(0,0,0,0.4); border: 1px solid var(--card-border); border-radius: 0.5rem; padding: 1rem; font-size: 0.85rem; line-height: 1.5; color: #f1f5f9; max-height: 400px; overflow-y: auto; white-space: pre-wrap;"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <script>
+    let globalCompanies = [];
+
+    function switchTab(tabId) {
+      document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+      event.target.classList.add('active');
+      ['enterprises', 'leads', 'knowledge', 'integrations', 'ai'].forEach(t => {
+        const el = document.getElementById(`tab-${t}`);
+        if (el) el.style.display = (t === tabId) ? 'block' : 'none';
+      });
+      if (tabId === 'leads') loadLeads();
+      if (tabId === 'knowledge') loadKnowledge();
+      if (tabId === 'integrations') loadIntegrations();
+      if (tabId === 'ai') loadAIConfig();
+    }
+
+    async function loadCompanies() {
+      const container = document.getElementById('companiesList');
+      try {
+        const res = await fetch('/api/companies');
+        globalCompanies = await res.json();
+        populateCompanyDropdowns();
+
+        if (!globalCompanies.length) {
+          container.innerHTML = '<p style="color: var(--text-muted);">No enterprises created yet. Create one on the left!</p>';
+          return;
+        }
+        container.innerHTML = globalCompanies.map(c => `
+          <div class="company-card">
+            <div class="company-header">
+              <div>
+                <strong style="font-size: 1.1rem;">${c.name}</strong>
+                <span style="color: var(--text-muted); font-size: 0.8rem; margin-left: 0.5rem;">#${c.id}</span>
+              </div>
+              <span class="badge" style="background: rgba(99, 102, 241, 0.15); color: #818cf8; border-color: rgba(99, 102, 241, 0.3);">
+                ${c.status}
+              </span>
+            </div>
+            <p style="font-size: 0.85rem; color: var(--text-muted);">
+              Industry: ${c.data?.industry || 'Not set'} | Budget: ${c.data?.budget || 'Not set'}
+            </p>
+            <div class="actions">
+              <button class="btn btn-sm" onclick="runPipeline(${c.id})">🚀 Run Agents</button>
+              <button class="btn btn-outline btn-sm" onclick="seedKnowledgeForCompany(${c.id}, 'indian_tea')">🍵 Load Indian Tea Data</button>
+              <button class="btn btn-outline btn-sm" onclick="generatePlan(${c.id})">📝 Generate Plan</button>
+              <button class="btn btn-outline btn-sm" style="color: #ef4444; border-color: rgba(239,68,68,0.3);" onclick="deleteCompany(${c.id})">Delete</button>
+            </div>
+          </div>
+        `).join('');
+      } catch (err) {
+        container.innerHTML = `<p style="color: #ef4444;">Failed to load: ${err.message}</p>`;
+      }
+    }
+
+    function populateCompanyDropdowns() {
+      const selects = ['leadCompanySelect', 'kbCompanySelect', 'integCompanySelect'];
+      selects.forEach(id => {
+        const el = document.getElementById(id);
+        if (!el) return;
+        const currentVal = el.value;
+        el.innerHTML = globalCompanies.map(c => `<option value="${c.id}">${c.name} (#${c.id})</option>`).join('');
+        if (currentVal) el.value = currentVal;
+      });
+    }
+
+    async function loadTasks() {
+      const el = document.getElementById('taskLogs');
+      try {
+        const res = await fetch('/api/tasks?limit=15');
+        const tasks = await res.json();
+        if (!tasks.length) {
+          el.innerHTML = '<em>No agent tasks executed yet.</em>';
+          return;
+        }
+        el.innerHTML = tasks.map(t => `
+          <div class="task-item">
+            <div style="color: #38bdf8;">[${t.agent_type.toUpperCase()}] <span style="color: ${t.status === 'done' ? '#34d399' : '#f59e0b'};">(${t.status})</span></div>
+            <div style="color: var(--text-muted); font-size: 0.75rem;">Company #${t.company_id} - ${new Date(t.created_at || Date.now()).toLocaleTimeString()}</div>
+            <div style="margin-top: 0.25rem; white-space: pre-wrap; font-size: 0.75rem;">${(t.result || t.error || 'Running...').substring(0, 140)}...</div>
+          </div>
+        `).join('');
+      } catch (err) {
+        el.innerHTML = `Error: ${err.message}`;
+      }
+    }
+
+    async function createCompany() {
+      const name = document.getElementById('compName').value.trim();
+      const industry = document.getElementById('compIndustry').value.trim();
+      const budget = document.getElementById('compBudget').value.trim();
+      if (!name) return alert('Please enter an enterprise name');
+
+      const res = await fetch('/api/companies', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name, industry, budget })
+      });
+      if (res.ok) {
+        const created = await res.json();
+        document.getElementById('compName').value = '';
+        await fetch(`/api/companies/${created.id}/knowledge/seed/indian_tea`, { method: 'POST' });
+        loadCompanies();
+      }
+    }
+
+    async function submitInboundLead() {
+      const companyId = parseInt(document.getElementById('leadCompanySelect').value);
+      const name = document.getElementById('leadName').value.trim();
+      const phone = document.getElementById('leadPhone').value.trim();
+      const email = document.getElementById('leadEmail').value.trim();
+      const source = document.getElementById('leadSource').value;
+      const interest = document.getElementById('leadInterest').value.trim();
+
+      if (!name || !interest) return alert('Please enter lead name and interest');
+
+      const btn = event.target;
+      btn.innerText = '⚡ Processing Auto-Response...';
+      btn.disabled = true;
+
+      try {
+        const res = await fetch('/api/leads/capture', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            company_id: companyId,
+            name, phone, email, source, interest,
+            auto_respond: true
+          })
+        });
+        const data = await res.json();
+        alert(`Lead Captured!\n\nWhatsApp Auto-Reply:\n${data.whatsapp_response || 'N/A'}`);
+        loadLeads();
+      } catch (e) {
+        alert(`Failed: ${e.message}`);
+      } finally {
+        btn.innerText = '⚡ Capture Lead & Trigger Auto-Responder';
+        btn.disabled = false;
+      }
+    }
+
+    async function loadLeads() {
+      const companyId = document.getElementById('leadCompanySelect')?.value || 1;
+      const container = document.getElementById('leadsContainer');
+      try {
+        const res = await fetch(`/api/companies/${companyId}/leads`);
+        const leads = await res.json();
+        if (!leads.length) {
+          container.innerHTML = '<p style="color: var(--text-muted);">No inbound leads captured yet. Simulate one on the left!</p>';
+          return;
+        }
+        container.innerHTML = leads.map(l => `
+          <div class="lead-box">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+              <strong style="color: white; font-size: 1rem;">👤 ${l.name}</strong>
+              <span class="badge" style="background: rgba(16, 185, 129, 0.2); color: #34d399;">${l.status.toUpperCase()}</span>
+            </div>
+            <div style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 0.5rem;">
+              📱 ${l.phone || 'No phone'} • ✉️ ${l.email || 'No email'} • 🏷️ Source: <b>${l.source}</b>
+            </div>
+            <div style="font-size: 0.85rem; color: #cbd5e1; margin-bottom: 0.75rem; background: rgba(255,255,255,0.03); padding: 0.5rem; border-radius: 0.35rem;">
+              <b>Inquiry:</b> ${l.interest}
+            </div>
+            <div style="border-top: 1px solid rgba(255,255,255,0.06); padding-top: 0.5rem;">
+              <span style="font-size: 0.75rem; font-weight: 600; color: #818cf8;">Automated Interactions (${l.interactions?.length || 0}):</span>
+              ${(l.interactions || []).map(i => {
+                const isWa = i.channel === 'whatsapp';
+                const cleanPhone = (l.phone || '').replace(/[^\d]/g, '');
+                const waLink = `https://wa.me/${cleanPhone}?text=${encodeURIComponent(i.message)}`;
+                const mailLink = `mailto:${l.email || ''}?subject=Welcome%20Inquiry&body=${encodeURIComponent(i.message)}`;
+                return `
+                <div style="margin-top: 0.4rem; padding: 0.6rem; background: rgba(0,0,0,0.3); border-radius: 0.35rem; font-size: 0.75rem;">
+                  <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <span style="color: ${isWa ? '#34d399' : '#38bdf8'}; font-weight: bold;">[${i.channel.toUpperCase()}]</span>
+                    <span style="color: #94a3b8; font-size: 0.7rem;">Status: ${i.status}</span>
+                  </div>
+                  <div style="white-space: pre-wrap; margin-top: 0.3rem; color: #e2e8f0; line-height: 1.3;">${i.message}</div>
+                  <div style="margin-top: 0.5rem;">
+                    ${isWa && cleanPhone ? `<a href="${waLink}" target="_blank" class="btn btn-sm" style="background: #25d366; color: white; text-decoration: none; padding: 0.25rem 0.6rem; font-size: 0.75rem; border-radius: 0.25rem; display: inline-block;">🚀 Open & Send in WhatsApp</a>` : ''}
+                    ${!isWa && l.email ? `<a href="${mailLink}" class="btn btn-sm" style="background: #3b82f6; color: white; text-decoration: none; padding: 0.25rem 0.6rem; font-size: 0.75rem; border-radius: 0.25rem; display: inline-block;">✉️ Open in Email App</a>` : ''}
+                  </div>
+                </div>
+                `;
+              }).join('')}
+            </div>
+          </div>
+        `).join('');
+      } catch (e) {
+        container.innerHTML = `<p style="color: #ef4444;">Error loading leads: ${e.message}</p>`;
+      }
+    }
+
+    async function loadKnowledge() {
+      const companyId = document.getElementById('kbCompanySelect')?.value || 1;
+      const container = document.getElementById('knowledgeList');
+      try {
+        const res = await fetch(`/api/companies/${companyId}/knowledge`);
+        const items = await res.json();
+        if (!items.length) {
+          container.innerHTML = '<p style="color: var(--text-muted);">No training data yet. Click "Seed Indian Tea Preset" to load real data!</p>';
+          return;
+        }
+        container.innerHTML = items.map(k => `
+          <div class="lead-box">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+              <strong style="color: #a5b4fc;">📖 ${k.title}</strong>
+              <span class="badge" style="background: rgba(99,102,241,0.15); color: #818cf8;">${k.category}</span>
+            </div>
+            <div style="white-space: pre-wrap; font-size: 0.8rem; color: #cbd5e1; line-height: 1.4;">${k.content}</div>
+          </div>
+        `).join('');
+      } catch (e) {
+        container.innerHTML = `<p style="color: #ef4444;">Error loading knowledge: ${e.message}</p>`;
+      }
+    }
+
+    async function seedKnowledge(preset) {
+      const companyId = document.getElementById('kbCompanySelect')?.value || 1;
+      await fetch(`/api/companies/${companyId}/knowledge/seed/${preset}`, { method: 'POST' });
+      alert(`Seeded ${preset} training data!`);
+      loadKnowledge();
+    }
+
+    async function seedKnowledgeForCompany(companyId, preset) {
+      await fetch(`/api/companies/${companyId}/knowledge/seed/${preset}`, { method: 'POST' });
+      alert(`Seeded ${preset} training data for company #${companyId}!`);
+    }
+
+    async function addKnowledge() {
+      const companyId = document.getElementById('kbCompanySelect')?.value || 1;
+      const title = document.getElementById('kbTitle').value.trim();
+      const category = document.getElementById('kbCategory').value;
+      const content = document.getElementById('kbContent').value.trim();
+      if (!title || !content) return alert('Please enter title and content');
+
+      await fetch(`/api/companies/${companyId}/knowledge`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ title, category, content })
+      });
+      document.getElementById('kbTitle').value = '';
+      document.getElementById('kbContent').value = '';
+      loadKnowledge();
+    }
+
+    async function loadIntegrations() {
+      const companyId = document.getElementById('integCompanySelect')?.value || 1;
+      const res = await fetch(`/api/companies/${companyId}/integrations`);
+      const items = await res.json();
+      items.forEach(i => {
+        if (i.channel === 'whatsapp') {
+          document.getElementById('waPhoneId').value = i.config.phone_number_id || '';
+          document.getElementById('waToken').value = i.config.access_token || '';
+        }
+        if (i.channel === 'email') {
+          document.getElementById('emailKey').value = i.config.resend_api_key || '';
+          document.getElementById('emailFrom').value = i.config.from_email || '';
+        }
+        if (i.channel === 'instagram') {
+          document.getElementById('igUserId').value = i.config.ig_user_id || '';
+          document.getElementById('igToken').value = i.config.access_token || '';
+        }
+      });
+    }
+
+    async function saveIntegration(channel) {
+      const companyId = document.getElementById('integCompanySelect')?.value || 1;
+      let config = {};
+      if (channel === 'whatsapp') {
+        config = {
+          phone_number_id: document.getElementById('waPhoneId').value.trim(),
+          access_token: document.getElementById('waToken').value.trim()
+        };
+      } else if (channel === 'email') {
+        config = {
+          resend_api_key: document.getElementById('emailKey').value.trim(),
+          from_email: document.getElementById('emailFrom').value.trim()
+        };
+      } else if (channel === 'instagram') {
+        config = {
+          ig_user_id: document.getElementById('igUserId').value.trim(),
+          access_token: document.getElementById('igToken').value.trim()
+        };
+      }
+
+      await fetch(`/api/companies/${companyId}/integrations`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ channel, config, is_active: true })
+      });
+      alert(`${channel.toUpperCase()} integration settings saved!`);
+    }
+
+    async function runPipeline(id) {
+      const res = await fetch(`/api/companies/${id}/run`, { method: 'POST' });
+      if (res.ok) {
+        alert('Multi-agent pipeline started in background!');
+        loadCompanies();
+        setTimeout(loadTasks, 1500);
+      }
+    }
+
+    async function generatePlan(id) {
+      const res = await fetch(`/api/companies/${id}/generate-plan`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: '{}' });
+      if (res.ok) {
+        alert('Business plan generated successfully!');
+        loadCompanies();
+        loadTasks();
+      }
+    }
+
+    async function deleteCompany(id) {
+      if (!confirm('Are you sure you want to delete this company?')) return;
+      await fetch(`/api/companies/${id}`, { method: 'DELETE' });
+      loadCompanies();
+      loadTasks();
+    }
+
+    async function loadAIConfig() {
+      try {
+        const res = await fetch('/api/config/llm');
+        const data = await res.json();
+        const banner = document.getElementById('aiStatusBanner');
+        if (data.is_live_ai) {
+          banner.style.background = 'rgba(16, 185, 129, 0.15)';
+          banner.style.borderColor = 'rgba(16, 185, 129, 0.4)';
+          banner.style.color = '#34d399';
+          banner.innerHTML = `🟢 <b>LIVE REAL-TIME AI ACTIVE:</b> ${data.active_provider}`;
+        } else {
+          banner.style.background = 'rgba(245, 158, 11, 0.15)';
+          banner.style.borderColor = 'rgba(245, 158, 11, 0.4)';
+          banner.style.color = '#fbbf24';
+          banner.innerHTML = `🟡 <b>Offline Simulation Mode:</b> Enter your Gemini or OpenAI API key below for live responses.`;
+        }
+      } catch (e) {
+        console.error(e);
+      }
+    }
+
+    async function saveAIConfig() {
+      const gemini_api_key = document.getElementById('aiGeminiKey').value.trim();
+      const openai_api_key = document.getElementById('aiOpenaiKey').value.trim();
+      const groq_api_key = document.getElementById('aiGroqKey').value.trim();
+      const anthropic_api_key = document.getElementById('aiAnthropicKey').value.trim();
+
+      const payload = {};
+      if (gemini_api_key) payload.gemini_api_key = gemini_api_key;
+      if (openai_api_key) payload.openai_api_key = openai_api_key;
+      if (groq_api_key) payload.groq_api_key = groq_api_key;
+      if (anthropic_api_key) payload.anthropic_api_key = anthropic_api_key;
+
+      const res = await fetch('/api/config/llm', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+      const data = await res.json();
+      alert(`AI Brain configuration saved!\nActive Engine: ${data.active_provider}`);
+      loadAIConfig();
+    }
+
+    async function runAITest() {
+      const prompt = document.getElementById('aiTestPrompt').value.trim();
+      if (!prompt) return alert('Please enter a test prompt');
+
+      const btn = document.getElementById('aiTestBtn');
+      btn.innerText = '⚡ AI Reasoning & Thinking...';
+      btn.disabled = true;
+
+      try {
+        const res = await fetch('/api/config/llm/test', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ prompt })
+        });
+        const data = await res.json();
+        document.getElementById('aiTestResult').style.display = 'block';
+        document.getElementById('aiModelName').innerText = data.provider;
+        document.getElementById('aiResponseContent').innerText = data.response;
+      } catch (e) {
+        alert('Test failed: ' + e.message);
+      } finally {
+        btn.innerText = '✨ Generate Real-Time AI Response';
+        btn.disabled = false;
+      }
+    }
+
+    loadCompanies();
+    loadTasks();
+    loadAIConfig();
+    setInterval(loadTasks, 8000);
+  </script>
+</body>
+</html>
+

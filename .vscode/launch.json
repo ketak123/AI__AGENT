@@ -1,0 +1,88 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Backend: FastAPI (Python)",
+      "type": "debugpy",
+      "request": "launch",
+      "python": "${workspaceFolder}/.venv/bin/python",
+      "module": "uvicorn",
+      "args": [
+        "backend.app_main:app",
+        "--host",
+        "127.0.0.1",
+        "--port",
+        "8001",
+        "--reload"
+      ],
+      "cwd": "${workspaceFolder}",
+      "console": "integratedTerminal",
+      "justMyCode": true,
+      "env": {
+        "PYTHONPATH": "${workspaceFolder}"
+      }
+    },
+    {
+      "name": "Frontend: Flutter (web)",
+      "type": "dart",
+      "request": "launch",
+      "program": "${workspaceFolder}/frontend/lib/main.dart",
+      "cwd": "${workspaceFolder}/frontend",
+      "deviceId": "chrome"
+    },
+    {
+      "name": "Frontend: Flutter (macOS Desktop)",
+      "type": "dart",
+      "request": "launch",
+      "program": "${workspaceFolder}/frontend/lib/main.dart",
+      "cwd": "${workspaceFolder}/frontend",
+      "deviceId": "macos"
+    },
+    {
+      "name": "Frontend: Flutter (Android Emulator)",
+      "type": "dart",
+      "request": "launch",
+      "program": "${workspaceFolder}/frontend/lib/main.dart",
+      "cwd": "${workspaceFolder}/frontend",
+      "deviceId": "android"
+    },
+    {
+      "name": "Frontend: Flutter (iOS Simulator)",
+      "type": "dart",
+      "request": "launch",
+      "program": "${workspaceFolder}/frontend/lib/main.dart",
+      "cwd": "${workspaceFolder}/frontend",
+      "deviceId": "ios"
+    }
+  ],
+  "compounds": [
+    {
+      "name": "Business Agent Stack",
+      "configurations": [
+        "Backend: FastAPI (Python)",
+        "Frontend: Flutter (web)"
+      ]
+    },
+    {
+      "name": "Business Agent Stack (Desktop)",
+      "configurations": [
+        "Backend: FastAPI (Python)",
+        "Frontend: Flutter (macOS Desktop)"
+      ]
+    },
+    {
+      "name": "Business Agent Stack (Android)",
+      "configurations": [
+        "Backend: FastAPI (Python)",
+        "Frontend: Flutter (Android Emulator)"
+      ]
+    },
+    {
+      "name": "Business Agent Stack (iOS)",
+      "configurations": [
+        "Backend: FastAPI (Python)",
+        "Frontend: Flutter (iOS Simulator)"
+      ]
+    }
+  ]
+}

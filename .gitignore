@@ -1,0 +1,9 @@
+.venv/
+__pycache__/
+*.py[cod]
+.DS_Store
+business_agents.db
+backend/.env
+frontend/.dart_tool/
+frontend/build/
+frontend/macos/Podfile.lock

@@ -1,0 +1,9 @@
+{
+  "recommendations": [
+    "ms-python.python",
+    "ms-python.vscode-pylance",
+    "dart-code.dart-code",
+    "dart-code.flutter",
+    "ms-vscode.vscode-json"
+  ]
+}
