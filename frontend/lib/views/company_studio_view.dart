@@ -132,8 +132,8 @@ class _CompanyStudioViewState extends State<CompanyStudioView> {
             'Add Training Document / Data',
             style: GoogleFonts.outfit(color: Colors.white, fontWeight: FontWeight.bold),
           ),
-          content: SizedBox(
-            width: 480,
+          content: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 480),
             child: SingleChildScrollView(
               child: Column(
                 mainAxisSize: MainAxisSize.min,
@@ -150,13 +150,26 @@ class _CompanyStudioViewState extends State<CompanyStudioView> {
                   const SizedBox(height: 12),
                   DropdownButtonFormField<String>(
                     initialValue: category,
+                    isExpanded: true,
                     dropdownColor: const Color(0xFF0F172A),
                     decoration: const InputDecoration(labelText: 'Category'),
                     items: const [
-                      DropdownMenuItem(value: 'product', child: Text('Product Specs & Pricing')),
-                      DropdownMenuItem(value: 'brand_tone', child: Text('Brand Voice & Guidelines')),
-                      DropdownMenuItem(value: 'faq', child: Text('Customer FAQs & Policies')),
-                      DropdownMenuItem(value: 'past_campaign', child: Text('High-Performing Past Ads/Emails')),
+                      DropdownMenuItem(
+                        value: 'product',
+                        child: Text('Product Specs & Pricing', overflow: TextOverflow.ellipsis, maxLines: 1),
+                      ),
+                      DropdownMenuItem(
+                        value: 'brand_tone',
+                        child: Text('Brand Voice & Guidelines', overflow: TextOverflow.ellipsis, maxLines: 1),
+                      ),
+                      DropdownMenuItem(
+                        value: 'faq',
+                        child: Text('Customer FAQs & Policies', overflow: TextOverflow.ellipsis, maxLines: 1),
+                      ),
+                      DropdownMenuItem(
+                        value: 'past_campaign',
+                        child: Text('High-Performing Past Ads/Emails', overflow: TextOverflow.ellipsis, maxLines: 1),
+                      ),
                     ],
                     onChanged: (val) {
                       if (val != null) setDialogState(() => category = val);
@@ -401,29 +414,31 @@ class _CompanyStudioViewState extends State<CompanyStudioView> {
           'Register New Enterprise',
           style: GoogleFonts.outfit(color: Colors.white, fontWeight: FontWeight.bold),
         ),
-        content: SizedBox(
-          width: 400,
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              TextField(
-                controller: nameCtrl,
-                style: const TextStyle(color: Colors.white),
-                decoration: const InputDecoration(labelText: 'Enterprise Name', hintText: 'e.g. Apex Global Systems'),
-              ),
-              const SizedBox(height: 12),
-              TextField(
-                controller: indCtrl,
-                style: const TextStyle(color: Colors.white),
-                decoration: const InputDecoration(labelText: 'Industry Sector'),
-              ),
-              const SizedBox(height: 12),
-              TextField(
-                controller: budgetCtrl,
-                style: const TextStyle(color: Colors.white),
-                decoration: const InputDecoration(labelText: 'Monthly Operating Budget'),
-              ),
-            ],
+        content: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 400),
+          child: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                TextField(
+                  controller: nameCtrl,
+                  style: const TextStyle(color: Colors.white),
+                  decoration: const InputDecoration(labelText: 'Enterprise Name', hintText: 'e.g. Apex Global Systems'),
+                ),
+                const SizedBox(height: 12),
+                TextField(
+                  controller: indCtrl,
+                  style: const TextStyle(color: Colors.white),
+                  decoration: const InputDecoration(labelText: 'Industry Sector'),
+                ),
+                const SizedBox(height: 12),
+                TextField(
+                  controller: budgetCtrl,
+                  style: const TextStyle(color: Colors.white),
+                  decoration: const InputDecoration(labelText: 'Monthly Operating Budget'),
+                ),
+              ],
+            ),
           ),
         ),
         actions: [

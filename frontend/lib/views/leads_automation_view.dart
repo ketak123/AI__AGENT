@@ -239,8 +239,8 @@ class _LeadsAutomationViewState extends State<LeadsAutomationView> {
             ),
           ],
         ),
-        content: SizedBox(
-          width: 480,
+        content: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 480),
           child: SingleChildScrollView(
             child: Column(
               mainAxisSize: MainAxisSize.min,

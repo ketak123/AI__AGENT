@@ -198,8 +198,8 @@ class _SocialHubViewState extends State<SocialHubView> {
               fontWeight: FontWeight.bold,
             ),
           ),
-          content: SizedBox(
-            width: 440,
+          content: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 440),
             child: SingleChildScrollView(
               child: Column(
                 mainAxisSize: MainAxisSize.min,
@@ -207,28 +207,49 @@ class _SocialHubViewState extends State<SocialHubView> {
                 children: [
                   DropdownButtonFormField<String>(
                     initialValue: platform,
+                    isExpanded: true,
                     dropdownColor: const Color(0xFF131B2E),
                     decoration: const InputDecoration(labelText: 'Platform'),
                     items: const [
                       DropdownMenuItem(
                         value: 'whatsapp',
-                        child: Text('WhatsApp Business (Meta/Twilio)'),
+                        child: Text(
+                          'WhatsApp Business (Meta/Twilio)',
+                          overflow: TextOverflow.ellipsis,
+                          maxLines: 1,
+                        ),
                       ),
                       DropdownMenuItem(
                         value: 'instagram',
-                        child: Text('Instagram Business Graph API'),
+                        child: Text(
+                          'Instagram Business Graph API',
+                          overflow: TextOverflow.ellipsis,
+                          maxLines: 1,
+                        ),
                       ),
                       DropdownMenuItem(
                         value: 'twitter',
-                        child: Text('Twitter / X'),
+                        child: Text(
+                          'Twitter / X',
+                          overflow: TextOverflow.ellipsis,
+                          maxLines: 1,
+                        ),
                       ),
                       DropdownMenuItem(
                         value: 'linkedin',
-                        child: Text('LinkedIn Company Page'),
+                        child: Text(
+                          'LinkedIn Company Page',
+                          overflow: TextOverflow.ellipsis,
+                          maxLines: 1,
+                        ),
                       ),
                       DropdownMenuItem(
                         value: 'facebook',
-                        child: Text('Facebook Page'),
+                        child: Text(
+                          'Facebook Page',
+                          overflow: TextOverflow.ellipsis,
+                          maxLines: 1,
+                        ),
                       ),
                     ],
                     onChanged: (val) =>

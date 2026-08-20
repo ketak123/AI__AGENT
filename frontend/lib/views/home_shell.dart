@@ -194,29 +194,31 @@ class _HomeShellState extends State<HomeShell> {
           'Register New Enterprise',
           style: GoogleFonts.outfit(color: Colors.white, fontWeight: FontWeight.bold),
         ),
-        content: SizedBox(
-          width: 400,
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              TextField(
-                controller: nameCtrl,
-                style: const TextStyle(color: Colors.white),
-                decoration: const InputDecoration(labelText: 'Enterprise Name', hintText: 'e.g. Apex Global Systems'),
-              ),
-              const SizedBox(height: 12),
-              TextField(
-                controller: indCtrl,
-                style: const TextStyle(color: Colors.white),
-                decoration: const InputDecoration(labelText: 'Industry Sector'),
-              ),
-              const SizedBox(height: 12),
-              TextField(
-                controller: budgetCtrl,
-                style: const TextStyle(color: Colors.white),
-                decoration: const InputDecoration(labelText: 'Monthly Operating Budget'),
-              ),
-            ],
+        content: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 400),
+          child: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                TextField(
+                  controller: nameCtrl,
+                  style: const TextStyle(color: Colors.white),
+                  decoration: const InputDecoration(labelText: 'Enterprise Name', hintText: 'e.g. Apex Global Systems'),
+                ),
+                const SizedBox(height: 12),
+                TextField(
+                  controller: indCtrl,
+                  style: const TextStyle(color: Colors.white),
+                  decoration: const InputDecoration(labelText: 'Industry Sector'),
+                ),
+                const SizedBox(height: 12),
+                TextField(
+                  controller: budgetCtrl,
+                  style: const TextStyle(color: Colors.white),
+                  decoration: const InputDecoration(labelText: 'Monthly Operating Budget'),
+                ),
+              ],
+            ),
           ),
         ),
         actions: [
@@ -785,7 +787,7 @@ class _HomeShellState extends State<HomeShell> {
               ),
             ],
           ),
-          bottomNavigationBar: isWideScreen ? null : _buildBottomNavBar(),
+          bottomNavigationBar: null,
         );
       },
     );
@@ -805,34 +807,26 @@ class _HomeShellState extends State<HomeShell> {
       centerTitle: true,
       title: InkWell(
         onTap: _showCompanySelectorBottomSheet,
-        borderRadius: BorderRadius.circular(20),
-        child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-          decoration: BoxDecoration(
-            color: const Color(0xFF1E293B).withValues(alpha: 0.7),
-            borderRadius: BorderRadius.circular(20),
-            border: Border.all(color: const Color(0xFF334155)),
-          ),
+        borderRadius: BorderRadius.circular(8),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Text(
-                'Gemini Business',
-                style: GoogleFonts.outfit(fontSize: 13.5, fontWeight: FontWeight.bold, color: Colors.white),
-              ),
-              if (_selectedCompany != null) ...[
-                const SizedBox(width: 4),
-                Flexible(
-                  child: Text(
-                    '• ${_selectedCompany!.name}',
-                    style: GoogleFonts.inter(fontSize: 11.5, color: const Color(0xFFA5B4FC)),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
+              Flexible(
+                child: Text(
+                  _selectedCompany?.name ?? 'Gemini',
+                  style: GoogleFonts.outfit(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.white,
                   ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                 ),
-              ],
+              ),
               const SizedBox(width: 4),
-              const Icon(Icons.keyboard_arrow_down_rounded, size: 16, color: Color(0xFF94A3B8)),
+              const Icon(Icons.keyboard_arrow_down_rounded, size: 18, color: Color(0xFF94A3B8)),
             ],
           ),
         ),
@@ -1407,41 +1401,6 @@ class _HomeShellState extends State<HomeShell> {
         vertical: 3,
       ),
       child: _isSidebarExpanded ? content : Tooltip(message: label, child: content),
-    );
-  }
-
-  Widget _buildBottomNavBar() {
-    return NavigationBar(
-      selectedIndex: _selectedIndex,
-      onDestinationSelected: (idx) => setState(() => _selectedIndex = idx),
-      backgroundColor: const Color(0xFF0F172A),
-      destinations: const [
-        NavigationDestination(
-          icon: Icon(Icons.chat_bubble_outline_rounded),
-          selectedIcon: Icon(Icons.chat_bubble_rounded),
-          label: 'Chat',
-        ),
-        NavigationDestination(
-          icon: Icon(Icons.rocket_launch_outlined),
-          selectedIcon: Icon(Icons.rocket_launch_rounded),
-          label: 'Pipeline',
-        ),
-        NavigationDestination(
-          icon: Icon(Icons.bolt_outlined),
-          selectedIcon: Icon(Icons.bolt_rounded),
-          label: 'Leads',
-        ),
-        NavigationDestination(
-          icon: Icon(Icons.business_outlined),
-          selectedIcon: Icon(Icons.business_rounded),
-          label: 'Studio',
-        ),
-        NavigationDestination(
-          icon: Icon(Icons.campaign_outlined),
-          selectedIcon: Icon(Icons.campaign_rounded),
-          label: 'Social',
-        ),
-      ],
     );
   }
 }

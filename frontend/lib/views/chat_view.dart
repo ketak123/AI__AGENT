@@ -40,6 +40,7 @@ class _ChatViewState extends State<ChatView> {
 
   // Gemini-style sliding Company Data Panel state
   bool _isCompanySliderOpen = false;
+  double? _customSliderWidth; // User-adjustable width
   List<KnowledgeItem> _companyKnowledge = [];
   bool _isLoadingKnowledge = false;
   String _knowledgeSearchQuery = '';
@@ -239,18 +240,19 @@ class _ChatViewState extends State<ChatView> {
     return LayoutBuilder(
       builder: (context, constraints) {
         final availableWidth = constraints.maxWidth;
-        // On wide desktop screens (>= 960px), side-by-side mode.
-        // On mobile / compact windows (< 960px), overlay drawer with backdrop.
-        final isSideBySide = availableWidth >= 960;
-        final sliderWidth = isSideBySide
-            ? (availableWidth * 0.34).clamp(280.0, 360.0)
-            : (availableWidth * 0.88).clamp(260.0, 380.0);
+        // On screens >= 840px, side-by-side mode; on narrower screens, slide-over overlay
+        final isSideBySide = availableWidth >= 840;
+        final defaultSliderWidth = isSideBySide
+            ? (availableWidth * 0.36).clamp(280.0, 520.0)
+            : (availableWidth * 0.88).clamp(240.0, 420.0);
+        final sliderWidth = (_customSliderWidth ?? defaultSliderWidth)
+            .clamp(220.0, availableWidth * (isSideBySide ? 0.65 : 0.95));
 
         return Scaffold(
           backgroundColor: Colors.transparent,
           body: Stack(
             children: [
-              // 1. Main Chat Area
+              // 1. Main Chat Area (Adjusts smoothly according to screen & sidebar width)
               Positioned(
                 left: 0,
                 top: 0,
@@ -270,8 +272,8 @@ class _ChatViewState extends State<ChatView> {
                   ),
                 ),
 
-              // 3. Sliding Company Intelligence Drawer
-              if (_isCompanySliderOpen)
+              // 3. Sliding Company Intelligence Drawer (Adjustable according to screen)
+              if (_isCompanySliderOpen) ...[
                 Positioned(
                   top: 0,
                   bottom: 0,
@@ -280,6 +282,9 @@ class _ChatViewState extends State<ChatView> {
                   child: Container(
                     decoration: BoxDecoration(
                       color: const Color(0xFF0F172A),
+                      border: Border(
+                        left: BorderSide(color: Colors.white.withValues(alpha: 0.08)),
+                      ),
                       boxShadow: [
                         if (!isSideBySide)
                           BoxShadow(
@@ -289,9 +294,49 @@ class _ChatViewState extends State<ChatView> {
                           ),
                       ],
                     ),
-                    child: _buildCompanyIntelligenceSlider(),
+                    child: _buildCompanyIntelligenceSlider(availableWidth, sliderWidth),
                   ),
                 ),
+
+                // 4. Interactive Left Border Drag Resize Handle
+                Positioned(
+                  top: 0,
+                  bottom: 0,
+                  right: sliderWidth - 6,
+                  width: 12,
+                  child: MouseRegion(
+                    cursor: SystemMouseCursors.resizeColumn,
+                    child: GestureDetector(
+                      behavior: HitTestBehavior.translucent,
+                      onHorizontalDragUpdate: (details) {
+                        setState(() {
+                          final currentW = _customSliderWidth ?? defaultSliderWidth;
+                          final newW = currentW - details.delta.dx;
+                          _customSliderWidth = newW.clamp(
+                            220.0,
+                            availableWidth * (isSideBySide ? 0.65 : 0.95),
+                          );
+                        });
+                      },
+                      onDoubleTap: () {
+                        setState(() {
+                          _customSliderWidth = null; // Reset to auto-responsive
+                        });
+                      },
+                      child: Center(
+                        child: Container(
+                          width: 4,
+                          height: 48,
+                          decoration: BoxDecoration(
+                            color: const Color(0xFF6366F1).withValues(alpha: 0.6),
+                            borderRadius: BorderRadius.circular(2),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
             ],
           ),
         );
@@ -623,8 +668,6 @@ class _ChatViewState extends State<ChatView> {
   }
 
   Widget _buildGeminiHeroEmptyState() {
-    final companyName = widget.selectedCompany?.name ?? 'Ketak';
-
     return LayoutBuilder(
       builder: (context, constraints) {
         final availableWidth = constraints.maxWidth;
@@ -674,9 +717,9 @@ class _ChatViewState extends State<ChatView> {
               FittedBox(
                 fit: BoxFit.scaleDown,
                 child: Text(
-                  'What can I help with, $companyName?',
+                  'What can I help with?',
                   style: GoogleFonts.outfit(
-                    fontSize: 26,
+                    fontSize: 28,
                     fontWeight: FontWeight.w400,
                     color: Colors.white,
                     letterSpacing: -0.5,
@@ -778,7 +821,7 @@ class _ChatViewState extends State<ChatView> {
     );
   }
 
-  Widget _buildCompanyIntelligenceSlider() {
+  Widget _buildCompanyIntelligenceSlider([double availableWidth = 800, double sliderWidth = 340]) {
     final comp = widget.selectedCompany;
     if (comp == null) {
       return Container(
@@ -841,9 +884,9 @@ class _ChatViewState extends State<ChatView> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Slider Header
+          // Slider Header with Dynamic Width Presets & Drag Handle Tooltip
           Container(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
             decoration: BoxDecoration(
               color: const Color(0xFF131B2E),
               border: Border(
@@ -877,9 +920,9 @@ class _ChatViewState extends State<ChatView> {
                         overflow: TextOverflow.ellipsis,
                       ),
                       Text(
-                        'Company Intelligence & Specs',
+                        'Drag edge to resize',
                         style: GoogleFonts.inter(
-                          fontSize: 11,
+                          fontSize: 10.5,
                           color: const Color(0xFF94A3B8),
                         ),
                       ),
@@ -887,7 +930,24 @@ class _ChatViewState extends State<ChatView> {
                   ),
                 ),
                 StatusChip(status: comp.status, compact: true),
-                const SizedBox(width: 4),
+                const SizedBox(width: 2),
+                IconButton(
+                  icon: const Icon(Icons.aspect_ratio_rounded, color: Color(0xFF94A3B8), size: 17),
+                  tooltip: 'Cycle Width (Compact / Wide / Auto)',
+                  padding: EdgeInsets.zero,
+                  constraints: const BoxConstraints(minWidth: 28, minHeight: 28),
+                  onPressed: () {
+                    setState(() {
+                      if (_customSliderWidth == null) {
+                        _customSliderWidth = (availableWidth * 0.52).clamp(380.0, availableWidth * 0.65);
+                      } else if (_customSliderWidth! > 380) {
+                        _customSliderWidth = 260.0;
+                      } else {
+                        _customSliderWidth = null; // Auto reset
+                      }
+                    });
+                  },
+                ),
                 IconButton(
                   icon: const Icon(Icons.close_rounded, color: Color(0xFF94A3B8), size: 20),
                   tooltip: 'Close Slider (Full Chat View)',
